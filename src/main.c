@@ -23,4 +23,24 @@ int main(int argc, char *argv[]){
   afd_print(A);
 
   afd_free(A);
+  
+  AFN B;
+  B = afn_init(Q,nbInitaux,listInitiaux,nbFinals,listFinals,Sigma);
+
+  afn_ajouter_transition(B, 0,'a',2);
+  afn_ajouter_transition(B, 0,'a',1);
+  afn_ajouter_transition(B, 0,'a',0);
+  afn_ajouter_transition(B, 1,'a',2);
+  afn_ajouter_transition(B, 1,'b',0);
+  afn_ajouter_transition(B, 1,'c',3);
+  afn_ajouter_transition(B, 2,'a',3);
+  afn_ajouter_transition(B, 2,'b',1);
+  afn_ajouter_transition(B, 2,'c',3);
+  afn_ajouter_transition(B, 3,'a',2);
+  afn_ajouter_transition(B, 3,'b',1);
+  afn_ajouter_transition(B, 3,'c',3);
+
+  afn_print(B);
+
+  afn_free(B);
 }
