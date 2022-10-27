@@ -24,8 +24,8 @@
 #endif
 
 COLD INLINE_NEVER
-void bad_malloc() {
-	fprintf(stderr, "malloc(): échec d'allocation");
+void bad_alloc() {
+	fprintf(stderr, "échec d'allocation dynamique");
 	exit(1);
 }
 
@@ -40,10 +40,22 @@ void* checked_malloc(size_t size) {
 	
 	void* ptr = malloc(size);
 	if(!ptr) {
-		bad_malloc();
+		bad_alloc();
 	}
 	
 	return ptr;
+}
+
+void* checked_realloc(void *ptr, size_t new_size) {
+	check_param("new_size", new_size != 0);
+	
+	void* new_ptr = realloc(ptr, new_size);
+	if(!new_ptr) {
+		free(ptr);
+		bad_alloc();
+	}
+	
+	return new_ptr;
 }
 
 void check_param(const char *pname, int ok) {
@@ -75,7 +87,7 @@ int fparse_int_base(FILE *f, const char *fpath, size_t *fline, char **buf, size_
 	
 	if(*bufPtr != NULL || (++(*fline), *bufLen = getline(buf, bufCapacity, f), *bufPtr = *buf, *bufLen) != -1) {
 		if(*bufLen == 0 || !isdigit(**bufPtr)) {
-			fprintf(stderr, "%s:%li:%li: nombre entier malformé\n", fpath, *fline,  *bufPtr - *buf);
+			fprintf(stderr, "%s:%li:%li: nombre entier malformé\n", fpath, *fline, *bufPtr - *buf);
 			exit(1);
 		}
 		

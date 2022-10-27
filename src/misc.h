@@ -9,6 +9,11 @@
 void* checked_malloc(size_t size);
 
 /**
+ * Renvoie {@code realloc(ptr, new_size)}, terminant le programme si celui-ci échoue.
+ */
+void* checked_realloc(void *ptr, size_t new_size);
+
+/**
  * Termine le programme en affichant un message d'erreur comme quoi le paramètre {@code pname} n'est pas valide
  * si {@code ok != 1}. 
  */

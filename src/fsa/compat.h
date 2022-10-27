@@ -149,6 +149,29 @@ AFN afn_finit(char *file);
 void afn_ajouter_transition(AFN A, int q1, char s, int q2);
 
 /*
+ * FUNCTION: afn_epsilon_fermeture
+ * -------------------------------
+ * renvoie un pointeur vers l'epsilon fermeture de l'ensemble d'états `R` 
+ *
+ * param:
+ *        A - un AFN
+ *        R - un ensemble d'états sous forme de tableau d'entiers triés par ordre croissant
+ * terminant par -1, NULL si vide
+ */
+
+int* afn_epsilon_fermeture(AFN A, int *R);
+/*
+ * FUNCTION: afn_simuler
+ * ---------------------
+ * renvoie 1 si la chaine `s` est acceptée par l'AFN `A`, 0 sinon
+ *
+ * param:
+ *        A - un AFN
+ *        s - la chaine de caractères à analyser
+ */
+int afn_simuler(AFN A, char *s);
+
+/*
  * FUNCTION: afn_print
  * -------------------
  * affiche l'AFN `A`

@@ -2,6 +2,7 @@
 #define FSA_NFA_H
 
 #include "fsa/mod.h"
+#include "set.h"
 
 /**
  * Représente un automate fini non-déterministe (AFN).
@@ -74,6 +75,13 @@ Nfa nfa_parse(char *path);
  * Modifie la fonction de transition d'un AFN de façon à ce que q2 appartiennent à Δ(q1, c).
  */
 void nfa_add_transition(Nfa A, int q1, char c, int q2);
+
+void nfa_epsilon_closure_in_place(Nfa A, set *G);
+
+/**
+ * Renvoie {@code 1} si jamais la chaîne spécifiée est accepté par l'AFN spécifié.
+ */
+int nfa_is_accepted(Nfa A, const char *s);
 
 /**
  * Affiche un AFN dans le flux de sortie standard.

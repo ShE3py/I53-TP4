@@ -2,7 +2,7 @@ SHELL = /bin/bash
 CC = gcc
 
 SRC = src
-OBJS = fsa/dfa.o fsa/nfa.o fsa/compat.o misc.o
+OBJS = fsa/dfa.o fsa/nfa.o fsa/compat.o set.o stack.o misc.o
 OUT = out
 
 CFLAGS = -Wall -g -I$(SRC)

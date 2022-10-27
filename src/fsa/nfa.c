@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "fsa/mod.h"
+#include "stack.h"
 #include "misc.h"
 
 Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int lenSigma) {
@@ -90,8 +91,8 @@ Nfa nfa_parse(char *path) {
 	int lenSigma;
 	char *Sigma;
 	if((lenSigma = getline(&buf, &bufCapacity, f)) != -1) {
-		Sigma = malloc(lenSigma);
-		memcpy(Sigma + 1, buf, lenSigma);
+		Sigma = checked_malloc(lenSigma);
+		memcpy(Sigma + 1, buf, lenSigma - 1);
 		Sigma[0] = EPSILON;
 	}
 	
@@ -118,7 +119,7 @@ void nfa_add_transition(Nfa A, int q1, char c, int q2) {
 	int **transitions = &(A->Delta[q1][s]);
 	
 	if(*transitions == NULL) {
-		*transitions = malloc(2 * sizeof(int));
+		*transitions = checked_malloc(2 * sizeof(int));
 		(*transitions)[0] = q2;
 		(*transitions)[1] = INVALID_STATE;
 	}
@@ -128,7 +129,7 @@ void nfa_add_transition(Nfa A, int q1, char c, int q2) {
 			++count;
 		}
 		
-		int *new_transitions = malloc((count + 2) * sizeof(int));
+		int *new_transitions = checked_malloc((count + 2) * sizeof(int));
 		memcpy(new_transitions, *transitions, count * sizeof(int));
 		new_transitions[count] = q2;
 		new_transitions[count + 1] = INVALID_STATE;
@@ -136,6 +137,69 @@ void nfa_add_transition(Nfa A, int q1, char c, int q2) {
 		free(*transitions);
 		*transitions = new_transitions;
 	}
+}
+
+void nfa_epsilon_closure_in_place(Nfa A, set *G) {
+	stack s = stack_init_from(G->buf, G->len);
+	
+	while(!stack_is_empty(s)) {
+		int q = stack_pop(&s);
+		
+		int *q1 = A->Delta[q][A->symbol_index[EPSILON - FIRST_SYMBOL]];
+		if(q1 == NULL) {
+			continue;
+		}
+		
+		while(*q1 != INVALID_STATE) {
+			if(set_push(G, *q1)) {
+				stack_push(&s, *q1);
+			}
+			
+			++q1;
+		}
+	}
+	
+	stack_free(&s);
+}
+
+int nfa_is_accepted(Nfa A, const char *s) {
+	set R = set_init_from(A->I, A->lenI);
+	nfa_epsilon_closure_in_place(A, &R);
+	
+	char c;
+	for(size_t i = 0; (c = s[i]) != '\0'; ++i) {
+		set tmp = set_init();
+		int s = A->symbol_index[c - FIRST_SYMBOL];
+		
+		for(size_t j = 0; j < R.len; ++j) {
+			int q = R.buf[j];
+			int *q1 = A->Delta[q][s];
+			
+			if(q1 != NULL) {
+				set q1s = set_init();
+				while(*q1 != INVALID_STATE) {
+					set_push(&q1s, *q1);
+					++q1;
+				}
+				
+				set tmp2 = set_union(tmp, q1s);
+				
+				set_free(&tmp);
+				set_free(&q1s);
+				tmp = tmp2;
+			}
+		}
+		
+		set_free(&R);
+		R = tmp;
+	}
+	
+	set F = set_init_from(A->F, A->lenF);
+	int accepted = !set_are_disjoints(R, F);
+	
+	set_free(&R);
+	set_free(&F);
+	return accepted;
 }
 
 void nfa_print(Nfa A) {

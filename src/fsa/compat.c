@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fsa/mod.h"
+#include "set.h"
+#include "stack.h"
 #include "misc.h"
 
 AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma) {
@@ -31,7 +34,7 @@ void afd_ajouter_transition(AFD A, int q1, char s, int q2) {
 }
 
 int afd_simuler(AFD A, char *s) {
-	return dfa_recognize(A, s);
+	return dfa_is_accepted(A, s);
 }
 
 void afd_print(AFD A) {
@@ -91,6 +94,36 @@ void afn_ajouter_transition(AFN A, int q1, char s, int q2) {
 
 void afn_print(AFN A) {
 	nfa_print(A);
+}
+
+int* afn_epsilon_fermeture(AFN A, int *R) {
+	stack s = stack_init();
+	if(R != NULL) {
+		while(*R != INVALID_STATE) {
+			stack_push(&s, *R);
+			++R;
+		}
+	}
+	
+	// assume R is sorted
+	set S;
+	S.buf = s.buf;
+	S.len = s.len;
+	S.capacity = s.capacity;
+	
+	nfa_epsilon_closure_in_place(A, &S);
+	
+	// append INVALID_STATE
+	s.buf = S.buf;
+	s.len = S.len;
+	s.capacity = S.capacity;
+	stack_push(&s, INVALID_STATE);
+	
+	return s.buf;
+}
+
+int afn_simuler(AFN A, char *s) {
+	return nfa_is_accepted(A, s);
 }
 
 void afn_free(AFN A) {

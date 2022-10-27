@@ -73,7 +73,7 @@ Dfa dfa_parse(char *path) {
 	int lenSigma;
 	char *Sigma;
 	if((lenSigma = getline(&buf, &bufCapacity, f)) != -1) {
-		Sigma = malloc(--lenSigma);
+		Sigma = checked_malloc(--lenSigma);
 		memcpy(Sigma, buf, lenSigma);
 	}
 	
@@ -99,7 +99,7 @@ void dfa_add_transition(Dfa A, int q1, char c, int q2) {
 	A->delta[q1][A->symbol_index[c - FIRST_SYMBOL]] = q2;
 }
 
-int dfa_recognize(Dfa A, const char *s) {
+int dfa_is_accepted(Dfa A, const char *s) {
 	int q = A->q0;
 	
 	char c;

@@ -23,9 +23,9 @@ int main(int argc, char *argv[]){
   afd_ajouter_transition(A, 3,'c',3);
 
   afd_print(A);
-  printf("b = %i\n", afd_simuler(A, "b")); // 1
-  printf("ab = %i\n", afd_simuler(A, "ab")); // 1
-  printf("baba = %i\n\n", afd_simuler(A, "baba")); // 0
+  printf("\"b\" = %i\n", afd_simuler(A, "b")); // 1
+  printf("\"ab\" = %i\n", afd_simuler(A, "ab")); // 1
+  printf("\"baba\" = %i\n\n", afd_simuler(A, "baba")); // 0
   
 
   afd_free(A);
@@ -48,6 +48,10 @@ int main(int argc, char *argv[]){
 
   afn_print(B);
   nfa_dot(B, "test");
+  
+  printf("\"b\" = %i\n", afn_simuler(B, "b")); // 0
+  printf("\"\" = %i\n", afn_simuler(B, "")); // 1
+  printf("\"cacbabbaa\" = %i\n", afn_simuler(B, "cacbabbaa")); // 1
 
   afn_free(B);
   
