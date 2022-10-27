@@ -14,4 +14,9 @@ void* checked_malloc(size_t size);
  */
 void check_param(const char *pname, int ok);
 
+/**
+ * Concatène deux chaînes de caractères dans une nouvelle chaînée allouée avec {@code malloc}.
+ */
+char* concat(const char *lhs, const char *rhs);
+
 #endif // MISC_H

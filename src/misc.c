@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef __has_attribute
 #	if __has_attribute(noinline)
@@ -48,4 +49,15 @@ void check_param(const char *pname, int ok) {
 	if(ok != 1) {
 		bad_param(pname);
 	}
+}
+
+char* concat(const char *lhs, const char *rhs) {
+	size_t lhsl = strlen(lhs);
+	size_t rhsl = strlen(rhs);
+	
+	char *out = malloc(lhsl + rhsl + 1);
+	memcpy(out, lhs, lhsl);
+	memcpy(out + lhsl, rhs, rhsl + 1);
+	
+	return out;
 }

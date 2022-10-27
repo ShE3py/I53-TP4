@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "fsa/mod.h"
@@ -61,7 +62,32 @@ Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int
 }
 
 void nfa_add_transition(Nfa A, int q1, char c, int q2) {
+	check_param("q1", q1 >= 0 && q1 <= A->Q);
+	check_param("c", c >= FIRST_SYMBOL && c <= LAST_SYMBOL);
+	check_param("q2", q2 >= 0 && q2 <= A->Q);
 	
+	int s = A->symbol_index[c - FIRST_SYMBOL];
+	int **transitions = &(A->Delta[q1][s]);
+	
+	if(*transitions == NULL) {
+		*transitions = malloc(2 * sizeof(int));
+		(*transitions)[0] = q2;
+		(*transitions)[1] = INVALID_STATE;
+	}
+	else {
+		int count = 0;
+		for(int i = 0; (*transitions)[i] != INVALID_STATE; ++i) {
+			++count;
+		}
+		
+		int *new_transitions = malloc((count + 2) * sizeof(int));
+		memcpy(new_transitions, *transitions, count * sizeof(int));
+		new_transitions[count] = q2;
+		new_transitions[count + 1] = INVALID_STATE;
+		
+		free(*transitions);
+		*transitions = new_transitions;
+	}
 }
 
 void nfa_print(Nfa A) {
@@ -123,6 +149,69 @@ void nfa_print(Nfa A) {
   }
   free(buffer);
   free(line);
+}
+
+void nfa_dot(Nfa A, const char *path) {
+	char *tmp = concat("out/", path);
+	char *out = concat(tmp, ".gz");
+	
+	free(tmp);
+	FILE *f = fopen(out, "w");
+	
+	fprintf(f,
+		"digraph {\n"
+		"\tlayout = dot\n"
+		"\trankdir = LR\n"
+		"\t\n"
+		"\tnode [shape=circle]\n"
+		"\tedge [arrowhead=open]\n"
+		"\t\n"
+	);
+	
+	for(int i = 0; i < A->lenI; ++i) {
+		fprintf(f, "\tstart%i [label=\"\", shape=none, height=0, width=0]\n", A->I[i]);
+		fprintf(f, "\tstart%1$i -> %1$i\n", A->I[i]);
+	}
+	
+	fprintf(f, "\t\n");
+	
+	for(int i = 0; i < A->lenF; ++i) {
+		fprintf(f, "\t%i [shape=doublecircle]\n", A->F[i]);
+	}
+	
+	fprintf(f, "\t\n");
+	
+	for(int q = 0; q <= A->Q; ++q) {
+		for(int i = 0; i < A->lenSigma; ++i) {
+			char c = A->Sigma[i];
+			int s = A->symbol_index[c - FIRST_SYMBOL];
+			
+			if(A->Delta[q][s] != NULL) {
+				int r;
+				for(int j = 0; (r = A->Delta[q][s][j]) != INVALID_STATE; ++j) {
+					fprintf(f, "\t%i -> %i [label=\"%c\"]\n", q, r, c);
+				}
+			}
+		}
+	}
+	
+	fprintf(f, "}\n");
+	fclose(f);
+	
+	char *in = out;
+	out = concat(path, ".png");
+	
+	char command[128];
+	snprintf(command, 128, "dot -Tpng %s -o %s", in, out);
+	
+	int retcode = system(command);
+	if(retcode != 0) {
+		fprintf(stderr, "dot: system(): %i\n", retcode);
+		exit(1);
+	}
+	
+	free(in);
+	free(out);
 }
 
 void nfa_free(Nfa *A) {

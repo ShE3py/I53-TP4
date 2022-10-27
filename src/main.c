@@ -41,6 +41,7 @@ int main(int argc, char *argv[]){
   afn_ajouter_transition(B, 3,'c',3);
 
   afn_print(B);
+  nfa_dot(B, "test");
 
   afn_free(B);
 }

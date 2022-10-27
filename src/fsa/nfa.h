@@ -76,6 +76,11 @@ void nfa_add_transition(Nfa A, int q1, char c, int q2);
 void nfa_print(Nfa A);
 
 /**
+ * Dessine un AFN dans le fichier spécifié.
+ */
+void nfa_dot(Nfa A, const char *path);
+
+/**
  * Libère les ressources allouées à un AFD.
  */
 void nfa_free(Nfa *A);

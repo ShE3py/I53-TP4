@@ -27,4 +27,4 @@ $(OUT)/%.o: $(SRC)/%.c
 
 clean:
 	rm -rf $(OUT)
-	rm -f *.exe
+	rm -f *.exe *.png
