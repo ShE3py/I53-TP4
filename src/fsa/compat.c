@@ -22,6 +22,10 @@ AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma) {
 	return dfa_construct(Q, q0, &F, nbFinals, &S, lenSigma);
 }
 
+AFD afd_finit(char *file) {
+	return dfa_parse(file);
+}
+
 void afd_ajouter_transition(AFD A, int q1, char s, int q2) {
 	dfa_add_transition(A, q1, s, q2);
 }
@@ -71,6 +75,10 @@ AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFi
 	}
 	
 	return nfa_construct(Q, &I, nbInitiaux, &F, nbFinals, &S, lenSigma);
+}
+
+AFN afn_finit(char *file) {
+	return nfa_parse(file);
 }
 
 void afn_ajouter_transition(AFN A, int q1, char s, int q2) {

@@ -61,6 +61,12 @@ Dfa dfa_construct(int Q, int q0, int **F, int lenF, char **Sigma, int lenSigma);
 
 
 /**
+ * Converti le fichier spécifié en un nouvel AFD.
+ */
+Dfa dfa_parse(char *path);
+
+
+/**
  * Modifie la fonction de transition d'un AFD de façon à ce que δ(q1, c) = q2.
  */
 void dfa_add_transition(Dfa A, int q1, char c, int q2);

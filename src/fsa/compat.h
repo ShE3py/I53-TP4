@@ -24,6 +24,28 @@ typedef Dfa AFD;
 AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma);
 
 /*
+ * FUNCTION: afd_finit
+ * ------------------
+ * initialise et renvoie un AFD à partir du fichier `file` écrit au format:
+ * 
+ *  'nombre_etat
+ *  'etat_initial
+ *  'nombre_etats_finals
+ *  'etat_final_1 etat_final_2 ... etat_final_n
+ *  'alphabet
+ *  'etat_i1 symbole_k1 etat_j1
+ *  'etat_i2 symbole_k2 etat_j2
+ *  '...
+ *  'etat_in symbole_kn etat_jn 
+ * 
+ * param :
+ *         file - un nom de fichier
+ * return:
+ *         un AFD complet
+ */
+AFD afd_finit(char *file);
+
+/*
  * FUNCTION: afd_ajouter_transition
  * --------------------------------
  * ajoute la transition  `q1` -- `s` --> `q2` à l'automate `A`
@@ -76,6 +98,29 @@ typedef Nfa AFN;
  *        un AFN dont la tableau de transition est allouée mais vide
  */
 AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFinals, char *Sigma);
+
+/*
+ * FUNCTION: afn_finit
+ * ------------------
+ * initialise et renvoie un AFN à partir du fichier `file` écrit au format:
+ * 
+ *  'nombre_etat
+ *  'nombre_etats_initiaux
+ *  'etat_initial_1 etat_initial_2 ... etat_initial_n
+ *  'nombre_etats_finals
+ *  'etat_final_1 etat_final_2 ... etat_final_n
+ *  'alphabet
+ *  'etat_i1 symbole_k1 etat_j1
+ *  'etat_i2 symbole_k2 etat_j2
+ *  '...
+ *  'etat_in symbole_kn etat_jn 
+ * 
+ * param :
+ *         file - un nom de fichier
+ * return:
+ *         un AFN complet
+ */
+AFN afn_finit(char *file);
 
 /*
  * FUNCTION: afn_ajouter_transition

@@ -25,7 +25,7 @@ Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int
 	}
 	
 	if(i == lenSigma) {
-		fprintf(stderr, "l'alphabet d'un AFN doit contenir EPSILON");
+		fprintf(stderr, "l'alphabet d'un AFN doit contenir EPSILON\n");
 		exit(1);
 	}
 	
@@ -43,7 +43,13 @@ Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int
 	}
 	
 	for(int i = 0; i < lenSigma; ++i) {
-		A->symbol_index[(*Sigma)[i] - FIRST_SYMBOL] = i;
+		char c = (*Sigma)[i];
+		if(c < FIRST_SYMBOL || c > LAST_SYMBOL) {
+			fprintf(stderr, "nfa_construct(): symbole non supporté: '%1$c' (%1$i)\n", c);
+			exit(1);
+		}
+		
+		A->symbol_index[c - FIRST_SYMBOL] = i;
 	}
 	
 	A->Delta = checked_malloc((Q + 1) * sizeof(int**));
@@ -58,6 +64,48 @@ Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int
 	*I = NULL;
 	*F = NULL;
 	*Sigma = NULL;
+	return A;
+}
+
+Nfa nfa_parse(char *path) {
+	char *rpath = concat("resources/", path);
+	FILE *f = fopen(rpath, "r");
+	if(f == NULL) {
+		fprintf(stderr, "fichier inaccessible: %s\n", path);
+		exit(1);
+	}
+	
+	char *buf = NULL;
+	size_t bufCapacity;
+	size_t line = 0;
+	
+	int Q = fparse_int(f, path, &line, &buf, &bufCapacity, 0);
+	
+	int lenI;
+	int *I = fparse_int_set(f, path, &line, &buf, &bufCapacity, &lenI, Q);
+	
+	int lenF;
+	int *F = fparse_int_set(f, path, &line, &buf, &bufCapacity, &lenF, Q);
+	
+	int lenSigma;
+	char *Sigma;
+	if((lenSigma = getline(&buf, &bufCapacity, f)) != -1) {
+		Sigma = malloc(lenSigma);
+		memcpy(Sigma + 1, buf, lenSigma);
+		Sigma[0] = EPSILON;
+	}
+	
+	Nfa A = nfa_construct(Q, &I, lenI, &F, lenF, &Sigma, lenSigma);
+	
+	int q1 = -1, q2 = -1;
+	char c = '\0';
+	while(fparse_transition(f, path, &line, &buf, &bufCapacity, &q1, &c, &q2)) {
+		nfa_add_transition(A, q1, c, q2);
+	}
+	
+	fclose(f);
+	free(rpath);
+	free(buf);
 	return A;
 }
 
@@ -199,7 +247,10 @@ void nfa_dot(Nfa A, const char *path) {
 	fclose(f);
 	
 	char *in = out;
-	out = concat(path, ".png");
+	
+	tmp = concat("resources/", path);
+	out = concat(tmp, ".png");
+	free(tmp);
 	
 	char command[128];
 	snprintf(command, 128, "dot -Tpng %s -o %s", in, out);

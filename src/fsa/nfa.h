@@ -66,6 +66,11 @@ typedef struct Nfa* Nfa;
 Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int lenSigma);
 
 /**
+ * Converti le fichier spécifié en un nouvel AFN.
+ */
+Nfa nfa_parse(char *path);
+
+/**
  * Modifie la fonction de transition d'un AFN de façon à ce que q2 appartiennent à Δ(q1, c).
  */
 void nfa_add_transition(Nfa A, int q1, char c, int q2);

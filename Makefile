@@ -27,4 +27,5 @@ $(OUT)/%.o: $(SRC)/%.c
 
 clean:
 	rm -rf $(OUT)
-	rm -f *.exe *.png
+	rm -f resources/*.png
+	rm -f *.exe

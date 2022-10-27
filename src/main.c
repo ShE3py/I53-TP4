@@ -44,4 +44,14 @@ int main(int argc, char *argv[]){
   nfa_dot(B, "test");
 
   afn_free(B);
+  
+  AFD C = afd_finit("afd.txt");
+  afd_print(C);
+  afd_free(C);
+  
+  AFN D = afn_finit("nfd.txt");
+  afn_print(D);
+  nfa_dot(D, "test2");
+  
+  afn_free(D);
 }
