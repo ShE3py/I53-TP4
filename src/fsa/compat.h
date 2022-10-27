@@ -59,6 +59,17 @@ AFD afd_finit(char *file);
 void afd_ajouter_transition(AFD A, int q1, char s, int q2);
 
 /*
+ * FUNCTION: afd_simuler
+ * ---------------------
+ * renvoie 1 si la chaine `s` est acceptée par l'AFD `A`, 0 sinon
+ *
+ * param:
+ *        A - un AFD
+ *        s - la chaine de caractères à analyser
+ */
+int afd_simuler(AFD A, char *s);
+
+/*
  * FUNCTION: afd_print
  * -------------------
  * affiche l'AFD `A`

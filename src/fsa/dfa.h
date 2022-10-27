@@ -73,6 +73,12 @@ void dfa_add_transition(Dfa A, int q1, char c, int q2);
 
 
 /**
+ * Renvoie {@code 1} si jamais la chaîne spécifiée est accepté par l'AFD spécifié.
+ */
+int dfa_recognize(Dfa A, const char *s);
+
+
+/**
  * Affiche un AFD dans le flux de sortie standard.
  */
 void dfa_print(Dfa A);

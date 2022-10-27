@@ -30,6 +30,10 @@ void afd_ajouter_transition(AFD A, int q1, char s, int q2) {
 	dfa_add_transition(A, q1, s, q2);
 }
 
+int afd_simuler(AFD A, char *s) {
+	return dfa_recognize(A, s);
+}
+
 void afd_print(AFD A) {
 	dfa_print(A);
 }

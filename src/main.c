@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "fsa/compat.h"
 
 int main(int argc, char *argv[]){
@@ -21,6 +23,10 @@ int main(int argc, char *argv[]){
   afd_ajouter_transition(A, 3,'c',3);
 
   afd_print(A);
+  printf("b = %i\n", afd_simuler(A, "b")); // 1
+  printf("ab = %i\n", afd_simuler(A, "ab")); // 1
+  printf("baba = %i\n\n", afd_simuler(A, "baba")); // 0
+  
 
   afd_free(A);
   

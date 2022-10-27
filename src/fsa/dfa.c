@@ -99,6 +99,32 @@ void dfa_add_transition(Dfa A, int q1, char c, int q2) {
 	A->delta[q1][A->symbol_index[c - FIRST_SYMBOL]] = q2;
 }
 
+int dfa_recognize(Dfa A, const char *s) {
+	int q = A->q0;
+	
+	char c;
+	for(int i = 0; (c = s[i]) != '\0'; ++i) {
+		if(c < FIRST_SYMBOL || c > LAST_SYMBOL) {
+			return 0;
+		}
+		
+		int s = A->symbol_index[c - FIRST_SYMBOL];
+		if(s == -1) {
+			return 0;
+		}
+		
+		q = A->delta[q][s];
+	}
+	
+	for(int i = 0; i < A->lenF; ++i) {
+		if(A->F[i] == q) {
+			return 1;
+		}
+	}
+	
+	return 0;
+}
+
 void dfa_print(Dfa A){
   printf("Q = {0,..,%d}\n", A->Q);
   printf("q0 = %d\n", A->q0);
