@@ -1,19 +1,30 @@
 SHELL = /bin/bash
 CC = gcc
-CFLAGS = -Wall -g
-LFLAGS = -lm
-OUT = out
-OBJS = afd.o afn.o
 
-test.exe: $(addprefix $(OUT)/,af.o $(OBJS))
+SRC = src
+OBJS = fsa/dfa.o fsa/compat.o misc.o
+OUT = out
+
+CFLAGS = -Wall -g -I$(SRC)
+LFLAGS = -lm
+
+mkdirs = $(OUT)/grass
+
+all: $(mkdirs) test.exe
+
+$(mkdirs):
+	mkdir -p $(OUT)/fsa/
+	touch $@
+
+test.exe: $(addprefix $(OUT)/,$(OBJS) main.o)
 	$(CC) $^ $(CFLAGS) -o $@ $(LFLAGS)
 
-$(OUT)/%.o: src/%.c src/%.h
+$(OUT)/%.o: $(SRC)/%.c $(SRC)/%.h
 	$(CC) -c $< $(CFLAGS) -o $@
 
-$(OUT)/%.o: src/%.c
+$(OUT)/%.o: $(SRC)/%.c
 	$(CC) -c $< $(CFLAGS) -o $@
 
 clean:
-	rm -f $(OUT)/*
+	rm -rf $(OUT)
 	rm -f *.exe
