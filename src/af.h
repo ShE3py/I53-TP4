@@ -1,6 +1,10 @@
 #ifndef FSA_MOD_H
 #define FSA_MOD_H
 
+#define ASCII_FIRST 38
+#define ASCII_LAST 127
+#define MAX_SYMBOLES 80
+
 /**
  * Le code ASCII du premier symbole utilisable du plus grand alphabet supporté (inclusif).
  */
