@@ -2,7 +2,7 @@
 #define FSA_NFA_H
 
 #include "fsa/mod.h"
-#include "set.h"
+#include "util/set.h"
 
 /**
  * Représente un automate fini non-déterministe (AFN).

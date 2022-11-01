@@ -1,10 +1,10 @@
-#include "set.h"
+#include "util/set.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "misc.h"
+#include "util/misc.h"
 
 set set_init() {
 	set s;

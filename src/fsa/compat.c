@@ -4,9 +4,9 @@
 #include <string.h>
 
 #include "fsa/mod.h"
-#include "set.h"
-#include "stack.h"
-#include "misc.h"
+#include "util/set.h"
+#include "util/stack.h"
+#include "util/misc.h"
 
 AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma) {
 	check_param("nbFinals", nbFinals > 0);

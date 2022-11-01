@@ -2,7 +2,7 @@ SHELL = /bin/bash
 CC = gcc
 
 SRC = src
-OBJS = fsa/dfa.o fsa/nfa.o fsa/compat.o set.o stack.o misc.o
+OBJS = fsa/dfa.o fsa/nfa.o fsa/compat.o util/set.o util/stack.o util/misc.o
 OUT = out
 
 CFLAGS = -Wall -g -I$(SRC)
@@ -14,6 +14,7 @@ all: $(mkdirs) test.exe
 
 $(mkdirs):
 	mkdir -p $(OUT)/fsa/
+	mkdir -p $(OUT)/util/
 	touch $@
 
 test.exe: $(addprefix $(OUT)/,$(OBJS) main.o)

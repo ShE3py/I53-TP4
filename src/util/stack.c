@@ -1,10 +1,10 @@
-#include "stack.h"
+#include "util/stack.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "misc.h"
+#include "util/misc.h"
 
 stack stack_init() {
 	stack s;

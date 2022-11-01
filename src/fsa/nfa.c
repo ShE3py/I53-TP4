@@ -6,8 +6,8 @@
 #include <math.h>
 
 #include "fsa/mod.h"
-#include "stack.h"
-#include "misc.h"
+#include "util/stack.h"
+#include "util/misc.h"
 
 Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int lenSigma) {
 	check_param("Q", Q >= 0);

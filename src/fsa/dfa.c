@@ -6,7 +6,7 @@
 #include <math.h>
 
 #include "fsa/mod.h"
-#include "misc.h"
+#include "util/misc.h"
 
 Dfa dfa_construct(int Q, int q0, int **F, int lenF, char **Sigma, int lenSigma) {
 	check_param("Q", Q >= 0);
