@@ -1,12 +1,12 @@
-#ifndef FSA_DFA_H
-#define FSA_DFA_H
+#ifndef AFD_H
+#define AFD_H
 
-#include "fsa/mod.h"
+#include "af.h"
 
 /**
  * Représente un automate fini déterministe (AFD).
  */
-struct Dfa {
+struct AFD {
 	/**
 	 * Le plus grand état de l'automate.
 	 */
@@ -28,7 +28,7 @@ struct Dfa {
 	int lenF;
 	
 	/**
-	 * L'alphabet de l'automate. Ne termine pas par le caractère nul {@code '\0'}.
+	 * L'alphabet de l'automate. La chaîne termine par un caractère nul.
 	 */
 	char *Sigma;
 	
@@ -38,55 +38,64 @@ struct Dfa {
 	int lenSigma;
 	
 	/**
-	 * La fonction de transition de l'automate. <br />
-	 * δ(q, τ) = {@code delta[q][symbol_index[τ]]}
+	 * La fonction de transition de l'automate.
+	 * δ(q, τ) = delta[q][dico[τ - ASCII_FIRST]]
 	 */
 	int **delta;
 	
 	/**
-	 * Table de conversion ASCII <-> indice du symbole dans la fonction de transition.
+	 * Table de conversion code ASCII de τ <-> indice du symbole τ dans la fonction de transition.
 	 */
-	int symbol_index[SYMBOL_COUNT];
+	int dico[MAX_SYMBOLES];
 };
 
-typedef struct Dfa* Dfa;
+typedef struct AFD* AFD;
 
 
 /**
- * Construit un nouvel AFD sans aucune transition à partir de sa définition. <br />
- * Les ensembles sont passés par pointeurs car cette fonction les consommes et les définira sur {@code NULL} pour empêcher l'appelant de les réutiliser. <br />
- * SAFETY: {@code F} et {@code Sigma} doivent avoir étés alloués avec {@code malloc}.
+ * Initialise et renvoie un nouvel AFD à partir de sa définition.
  */
-Dfa dfa_construct(int Q, int q0, int **F, int lenF, char **Sigma, int lenSigma);
+AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma);
 
 
 /**
- * Converti le fichier spécifié en un nouvel AFD.
+ * Modifie la fonction de transition de l'AFD spécifié de façon à ce que δ(q1, s) = q2.
  */
-Dfa dfa_parse(char *path);
+void afd_ajouter_transition(AFD A, int q1, char s, int q2);
 
 
 /**
- * Modifie la fonction de transition d'un AFD de façon à ce que δ(q1, c) = q2.
+ * Initialise et renvoie un nouvel AFD à partir d'un fichier `filename` écrit au format :
+ * ```
+ * Q
+ * q0
+ * lenF
+ * F[0] F[1] ... F[lenF - 1]
+ * Sigma
+ * q0 τ0 q'0
+ * q1 τ1 q'1
+ * ...
+ * qk τk q'k
+ * ```
  */
-void dfa_add_transition(Dfa A, int q1, char c, int q2);
+AFD afd_finit(char *filename);
 
 
 /**
- * Renvoie {@code 1} si jamais la chaîne spécifiée est accepté par l'AFD spécifié.
+ * Renvoie `1` si la chaîne spécifiée est acceptée par l'AFD spécifié, sinon renvoie `0`.
  */
-int dfa_is_accepted(Dfa A, const char *s);
+int afd_simuler(AFD A, const char *s);
 
 
 /**
- * Affiche un AFD dans le flux de sortie standard.
+ * Affiche l'AFD spécifié dans le flux de sortie standard.
  */
-void dfa_print(Dfa A);
+void afd_print(AFD A);
 
 
 /**
  * Libère les ressources allouées à un AFD.
  */
-void dfa_free(Dfa *A);
+void afd_free(AFD A);
 
-#endif // FSA_DFA_H
+#endif // AFD_H

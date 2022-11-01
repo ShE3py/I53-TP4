@@ -1,33 +1,25 @@
-#ifndef FSA_MOD_H
-#define FSA_MOD_H
+#ifndef AF_H
+#define AF_H
 
+/**
+ * Tout symbole dans l'alphabet d'un AF aura un code ASCII supérieur ou égal à cette valeur.
+ */
 #define ASCII_FIRST 38
-#define ASCII_LAST 127
-#define MAX_SYMBOLES 80
 
 /**
- * Le code ASCII du premier symbole utilisable du plus grand alphabet supporté (inclusif).
+ * Tout symbole dans l'alphabet d'un AF aura un code ASCII inférieur ou égal à cette valeur.
  */
-#define FIRST_SYMBOL 38
+#define ASCII_LAST 122
 
 /**
- * Le code ASCII du dernier symbole utilisable du plus grand alphabet supporté (inclusif).
+ * Le nombre maximal de symboles que peut posséder l'alphabet d'un AF.
  */
-#define LAST_SYMBOL 122
+#define MAX_SYMBOLES (ASCII_LAST - ASCII_FIRST + 1)
+
 
 /**
- * Le nombre de symboles utilisables dans le plus grand alphabet supporté.
- */
-#define SYMBOL_COUNT (LAST_SYMBOL - FIRST_SYMBOL + 1)
-
-/**
- * Le seul mot de longueur zéro.
- */
-#define EPSILON '&'
-
-/**
- * Représente un état invalide.
+ * Le nom d'un état qui n'appartiendra jamais à un AF.
  */
 #define INVALID_STATE -1
 
-#endif // FSA_MOD_H
+#endif // AF_H

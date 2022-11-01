@@ -1,13 +1,20 @@
-#ifndef FSA_NFA_H
-#define FSA_NFA_H
+#ifndef AFN_H
+#define AFN_H
 
-#include "fsa/mod.h"
+#include "af.h"
+
 #include "util/set.h"
+
+/**
+ * Le symbole représentant une possible epsilon-transition dans un AFN.
+ */
+#define EPSILON '&'
+
 
 /**
  * Représente un automate fini non-déterministe (AFN).
  */
-struct Nfa {
+struct AFN {
 	/**
 	 * Le plus grand état de l'automate.
 	 */
@@ -34,7 +41,7 @@ struct Nfa {
 	int lenF;
 	
 	/**
-	 * L'alphabet de l'automate. Ne termine pas par le caractère nul {@code '\0'}.
+	 * L'alphabet de l'automate. La chaîne termine par un caractère nul.
 	 */
 	char *Sigma;
 	
@@ -44,58 +51,79 @@ struct Nfa {
 	int lenSigma;
 	
 	/**
-	 * La fonction de transition de l'automate. <br />
-	 * Δ(q, τ) = {@code Delta[q][symbol_index[τ]]} <br />
-	 * La fin d'un ensemble dans l'ensemble des parties est marquée par {@code INVALID_STATE}. <br />
-	 * L'ensemble vide peut être noté par {@code \{INVALID_STATE\}} ou {@code NULL}.
+	 * La fonction de transition de l'automate.
+	 * Δ(q, τ) = delta[q][dico[τ - ASCII-FIRST]]
+	 * La fin d'un ensemble dans l'ensemble des parties est marquée par la constante `INVALID_STATE`.
+	 * L'ensemble vide peut être noté par un singleton `{INVALID_STATE}` ou par `NULL`.
 	 */
-	int ***Delta;
+	int ***delta;
 	
 	/**
-	 * Table de conversion ASCII <-> indice du symbole dans la fonction de transition.
+	 * Table de conversion code ASCII de τ <-> indice du symbole τ dans la fonction de transition.
 	 */
-	int symbol_index[SYMBOL_COUNT];
+	int dico[MAX_SYMBOLES];
 };
 
-typedef struct Nfa* Nfa;
+typedef struct AFN* AFN;
+
 
 /**
- * Construit un nouvel AFN sans aucune transition à partir de sa définition. <br />
- * Les ensembles sont passés par pointeurs car cette fonction les consommes et les définira sur {@code NULL} pour empêcher l'appelant de les réutiliser. <br />
- * SAFETY: {@code I}, {@code F} et {@code Sigma} doivent avoir étés alloués avec {@code malloc}.
+ * Initialise et renvoie un nouvel AFN à partir de sa définition.
  */
-Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int lenSigma);
+AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFinals, char *Sigma);
+
 
 /**
- * Converti le fichier spécifié en un nouvel AFN.
+ * Modifie la fonction de transition de l'AFN spécifié de façon à ce que Δ(q1, s) contienne l'état q2.
  */
-Nfa nfa_parse(char *path);
+void afn_ajouter_transition(AFN A, int q1, char s, int q2);
+
 
 /**
- * Modifie la fonction de transition d'un AFN de façon à ce que q2 appartiennent à Δ(q1, c).
+ * Initialise et renvoie un nouvel AFN à partir d'un fichier `filename` écrit au format :
+ * ```
+ * Q
+ * lenI
+ * I[0] I[1] ... I[lenI - 1]
+ * lenF
+ * F[0] F[1] ... F[lenF - 1]
+ * Sigma
+ * q0 τ0 q'0
+ * q1 τ1 q'1
+ * ...
+ * qk τk q'k
+ * ```
  */
-void nfa_add_transition(Nfa A, int q1, char c, int q2);
+AFN afn_finit(char *filename);
 
-void nfa_epsilon_closure_in_place(Nfa A, set *G);
 
 /**
- * Renvoie {@code 1} si jamais la chaîne spécifiée est accepté par l'AFN spécifié.
+ * Calcul et renvoie l'epsilon-fermeture d'un ensemble d'états `R` trié par ordre croissant et dont le dernier élément `INVALID_STATE`.
  */
-int nfa_is_accepted(Nfa A, const char *s);
+int* afn_epsilon_fermeture(AFN A, int *R);
+
 
 /**
- * Affiche un AFN dans le flux de sortie standard.
+ * Renvoie `1` si la chaîne spécifiée est acceptée par l'AFN spécifié, sinon renvoie `0`.
  */
-void nfa_print(Nfa A);
+int afn_simuler(AFN A, const char *s);
+
 
 /**
- * Dessine un AFN dans le fichier spécifié.
+ * Affiche l'AFN spécifié dans le flux de sortie standard.
  */
-void nfa_dot(Nfa A, const char *path);
+void afn_print(AFN A);
+
 
 /**
- * Libère les ressources allouées à un AFD.
+ * Dessine un AFN dans un fichier `filename.png`.
  */
-void nfa_free(Nfa *A);
+void afn_dot(AFN A, const char *filename);
 
-#endif // FSA_NFA_H
+
+/**
+ * Libère les ressources allouées à un AFN.
+ */
+void afn_free(AFN A);
+
+#endif // AFN_H

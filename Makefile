@@ -2,7 +2,7 @@ SHELL = /bin/bash
 CC = gcc
 
 SRC = src
-OBJS = fsa/dfa.o fsa/nfa.o fsa/compat.o util/set.o util/stack.o util/misc.o
+OBJS = afd.o afn.o util/misc.o util/stack.o util/set.o
 OUT = out
 
 CFLAGS = -Wall -g -I$(SRC)
@@ -13,7 +13,6 @@ mkdirs = $(OUT)/grass
 all: $(mkdirs) test.exe
 
 $(mkdirs):
-	mkdir -p $(OUT)/fsa/
 	mkdir -p $(OUT)/util/
 	touch $@
 

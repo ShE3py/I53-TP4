@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-#include "fsa/compat.h"
+#include "afd.h"
+#include "afn.h"
 
 int main(int argc, char *argv[]){
   int Q=3,q0=0,nbFinals=2,listFinals[2]={1,3}, nbInitaux=2, listInitiaux[2]={0,1};
@@ -47,7 +48,7 @@ int main(int argc, char *argv[]){
   afn_ajouter_transition(B, 3,'c',3);
 
   afn_print(B);
-  nfa_dot(B, "test");
+  afn_dot(B, "test");
   
   printf("\"b\" = %i\n", afn_simuler(B, "b")); // 0
   printf("\"\" = %i\n", afn_simuler(B, "")); // 1
@@ -61,7 +62,7 @@ int main(int argc, char *argv[]){
   
   AFN D = afn_finit("nfd.txt");
   afn_print(D);
-  nfa_dot(D, "test2");
+  afn_dot(D, "test2");
   
   afn_free(D);
 }

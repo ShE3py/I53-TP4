@@ -1,122 +1,118 @@
-#include "fsa/nfa.h"
+#include "afn.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-#include "fsa/mod.h"
 #include "util/stack.h"
 #include "util/misc.h"
 
-Nfa nfa_construct(int Q, int **I, int lenI, int **F, int lenF, char **Sigma, int lenSigma) {
+/**
+ * Initialise et renvoie un nouvel AFN à partir de sa définition sans effectuer de copie.
+ */
+AFN afn_init_owned(int Q, int *I, int lenI, int *F, int lenF, char *Sigma, int lenSigma) {
 	check_param("Q", Q >= 0);
-	check_param("I", I != NULL && *I != NULL);
+	check_param("I", I != NULL);
 	check_param("lenI", lenI > 0);
-	check_param("F", F != NULL && *F != NULL);
+	check_param("F", F != NULL);
 	check_param("lenF", lenF > 0);
-	check_param("Sigma", Sigma != NULL && *Sigma != NULL);
+	check_param("Sigma", Sigma != NULL);
 	check_param("lenSigma", lenSigma > 0);
 	
 	int i;
 	for(i = 0; i < lenSigma; ++i) {
-		if((*Sigma)[i] == EPSILON) {
+		if(Sigma[i] == EPSILON) {
 			break;
 		}
 	}
 	
 	if(i == lenSigma) {
-		fprintf(stderr, "l'alphabet d'un AFN doit contenir EPSILON\n");
+		fprintf(stderr, "l'alphabet d'un AFN doit obligatoirement contenir EPSILON\n");
 		exit(1);
 	}
 	
-	Nfa A = checked_malloc(sizeof(struct Nfa));
+	AFN A = checked_malloc(sizeof(struct AFN));
 	A->Q = Q;
-	A->I = *I;
+	A->I = I;
 	A->lenI = lenI;
-	A->F = *F;
+	A->F = F;
 	A->lenF = lenF;
-	A->Sigma = *Sigma;
+	A->Sigma = Sigma;
 	A->lenSigma = lenSigma;
 	
-	for(int i = 0; i < SYMBOL_COUNT; ++i) {
-		A->symbol_index[i] = -1;
+	for(int i = 0; i < MAX_SYMBOLES; ++i) {
+		A->dico[i] = -1;
 	}
 	
 	for(int i = 0; i < lenSigma; ++i) {
-		char c = (*Sigma)[i];
-		if(c < FIRST_SYMBOL || c > LAST_SYMBOL) {
-			fprintf(stderr, "nfa_construct(): symbole non supporté: '%1$c' (%1$i)\n", c);
+		char c = Sigma[i];
+		if(c < ASCII_FIRST || c > ASCII_LAST) {
+			fprintf(stderr, "afn_init_owned(): symbole non supporté: '%1$c' (%1$i)\n", c);
 			exit(1);
 		}
 		
-		A->symbol_index[c - FIRST_SYMBOL] = i;
+		A->dico[c - ASCII_FIRST] = i;
 	}
 	
-	A->Delta = checked_malloc((Q + 1) * sizeof(int**));
+	A->delta = checked_malloc((Q + 1) * sizeof(int**));
 	for(int q = 0; q <= Q; ++q) {
-		A->Delta[q] = checked_malloc(lenSigma * sizeof(int*));
+		A->delta[q] = checked_malloc(lenSigma * sizeof(int*));
 		
 		for(int s = 0; s < lenSigma; ++s) {
-			A->Delta[q][s] = NULL;
+			A->delta[q][s] = NULL;
 		}
 	}
 	
-	*I = NULL;
-	*F = NULL;
-	*Sigma = NULL;
 	return A;
 }
 
-Nfa nfa_parse(char *path) {
-	char *rpath = concat("resources/", path);
-	FILE *f = fopen(rpath, "r");
-	if(f == NULL) {
-		fprintf(stderr, "fichier inaccessible: %s\n", path);
-		exit(1);
+AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFinals, char *Sigma) {
+	check_param("nbInitiaux", nbInitiaux > 0);
+	check_param("listInitiaux", listInitiaux != NULL);
+	check_param("nbFinals", nbFinals > 0);
+	check_param("listFinals", listFinals != NULL);
+	check_param("Sigma", Sigma != NULL);
+	
+	int lenSigma = strlen(Sigma);
+	check_param("strlen(Sigma)", lenSigma > 0);
+	
+	int *I = checked_malloc(nbInitiaux * sizeof(int));
+	memcpy(I, listInitiaux, nbInitiaux * sizeof(int));
+	
+	int *F = checked_malloc(nbFinals * sizeof(int));
+	memcpy(F, listFinals, nbFinals * sizeof(int));
+	
+	int i;
+	for(i = 0; i < lenSigma; ++i) {
+		if(Sigma[i] == EPSILON) {
+			break;
+		}
 	}
 	
-	char *buf = NULL;
-	size_t bufCapacity;
-	size_t line = 0;
-	
-	int Q = fparse_int(f, path, &line, &buf, &bufCapacity, 0);
-	
-	int lenI;
-	int *I = fparse_int_set(f, path, &line, &buf, &bufCapacity, &lenI, Q);
-	
-	int lenF;
-	int *F = fparse_int_set(f, path, &line, &buf, &bufCapacity, &lenF, Q);
-	
-	int lenSigma;
-	char *Sigma;
-	if((lenSigma = getline(&buf, &bufCapacity, f)) != -1) {
-		Sigma = checked_malloc(lenSigma);
-		memcpy(Sigma + 1, buf, lenSigma - 1);
-		Sigma[0] = EPSILON;
+	char *S;
+	if(i == lenSigma) {
+		++lenSigma;
+		
+		S = checked_malloc(lenSigma + 1);
+		memcpy(S + 1, Sigma, lenSigma);
+		S[0] = EPSILON;
+	}
+	else {
+		S = checked_malloc(lenSigma + 1);
+		memcpy(S, Sigma, lenSigma + 1);
 	}
 	
-	Nfa A = nfa_construct(Q, &I, lenI, &F, lenF, &Sigma, lenSigma);
-	
-	int q1 = -1, q2 = -1;
-	char c = '\0';
-	while(fparse_transition(f, path, &line, &buf, &bufCapacity, &q1, &c, &q2)) {
-		nfa_add_transition(A, q1, c, q2);
-	}
-	
-	fclose(f);
-	free(rpath);
-	free(buf);
-	return A;
+	return afn_init_owned(Q, I, nbInitiaux, F, nbFinals, S, lenSigma);
 }
 
-void nfa_add_transition(Nfa A, int q1, char c, int q2) {
+void afn_ajouter_transition(AFN A, int q1, char c, int q2) {
 	check_param("q1", q1 >= 0 && q1 <= A->Q);
-	check_param("c", c >= FIRST_SYMBOL && c <= LAST_SYMBOL);
+	check_param("c", c >= ASCII_FIRST && c <= ASCII_LAST);
 	check_param("q2", q2 >= 0 && q2 <= A->Q);
 	
-	int s = A->symbol_index[c - FIRST_SYMBOL];
-	int **transitions = &(A->Delta[q1][s]);
+	int s = A->dico[c - ASCII_FIRST];
+	int **transitions = &(A->delta[q1][s]);
 	
 	if(*transitions == NULL) {
 		*transitions = checked_malloc(2 * sizeof(int));
@@ -139,13 +135,59 @@ void nfa_add_transition(Nfa A, int q1, char c, int q2) {
 	}
 }
 
-void nfa_epsilon_closure_in_place(Nfa A, set *G) {
+AFN afn_finit(char *filename) {
+	char *rpath = concat("resources/", filename);
+	FILE *f = fopen(rpath, "r");
+	if(f == NULL) {
+		fprintf(stderr, "fichier inaccessible: %s\n", filename);
+		exit(1);
+	}
+	
+	char *buf = NULL;
+	size_t bufCapacity;
+	size_t line = 0;
+	
+	int Q = fparse_int(f, filename, &line, &buf, &bufCapacity, 0);
+	
+	int lenI;
+	int *I = fparse_int_set(f, filename, &line, &buf, &bufCapacity, &lenI, Q);
+	
+	int lenF;
+	int *F = fparse_int_set(f, filename, &line, &buf, &bufCapacity, &lenF, Q);
+	
+	int lenSigma;
+	char *Sigma;
+	if((lenSigma = getline(&buf, &bufCapacity, f)) != -1) {
+		Sigma = checked_malloc(lenSigma);
+		memcpy(Sigma + 1, buf, lenSigma - 1);
+		Sigma[0] = EPSILON;
+	}
+	else {
+		fprintf(stderr, "%s: fin du fichier, alphabet attendu\n", filename);
+		exit(1);
+	}
+	
+	AFN A = afn_init_owned(Q, I, lenI, F, lenF, Sigma, lenSigma);
+	
+	int q1 = -1, q2 = -1;
+	char c = '\0';
+	while(fparse_transition(f, filename, &line, &buf, &bufCapacity, &q1, &c, &q2)) {
+		afn_ajouter_transition(A, q1, c, q2);
+	}
+	
+	fclose(f);
+	free(rpath);
+	free(buf);
+	return A;
+}
+
+void nfa_epsilon_closure_in_place(AFN A, set *G) {
 	stack s = stack_init_from(G->buf, G->len);
 	
 	while(!stack_is_empty(s)) {
 		int q = stack_pop(&s);
 		
-		int *q1 = A->Delta[q][A->symbol_index[EPSILON - FIRST_SYMBOL]];
+		int *q1 = A->delta[q][A->dico[EPSILON - ASCII_FIRST]];
 		if(q1 == NULL) {
 			continue;
 		}
@@ -162,18 +204,44 @@ void nfa_epsilon_closure_in_place(Nfa A, set *G) {
 	stack_free(&s);
 }
 
-int nfa_is_accepted(Nfa A, const char *s) {
+int* afn_epsilon_fermeture(AFN A, int *R) {
+	stack s = stack_init();
+	if(R != NULL) {
+		while(*R != INVALID_STATE) {
+			stack_push(&s, *R);
+			++R;
+		}
+	}
+	
+	// assume R is sorted
+	set S;
+	S.buf = s.buf;
+	S.len = s.len;
+	S.capacity = s.capacity;
+	
+	nfa_epsilon_closure_in_place(A, &S);
+	
+	// append INVALID_STATE
+	s.buf = S.buf;
+	s.len = S.len;
+	s.capacity = S.capacity;
+	stack_push(&s, INVALID_STATE);
+	
+	return s.buf;
+}
+
+int afn_simuler(AFN A, const char *s) {
 	set R = set_init_from(A->I, A->lenI);
 	nfa_epsilon_closure_in_place(A, &R);
 	
 	char c;
 	for(size_t i = 0; (c = s[i]) != '\0'; ++i) {
 		set tmp = set_init();
-		int s = A->symbol_index[c - FIRST_SYMBOL];
+		int s = A->dico[c - ASCII_FIRST];
 		
 		for(size_t j = 0; j < R.len; ++j) {
 			int q = R.buf[j];
-			int *q1 = A->Delta[q][s];
+			int *q1 = A->delta[q][s];
 			
 			if(q1 != NULL) {
 				set q1s = set_init();
@@ -202,7 +270,7 @@ int nfa_is_accepted(Nfa A, const char *s) {
 	return accepted;
 }
 
-void nfa_print(Nfa A) {
+void afn_print(AFN A) {
   printf("Q = {0,..,%d}\n", A->Q);
   printf("I = {");
   for (int i=0; i<A->lenI; i++) printf("%d,",A->I[i]);
@@ -219,10 +287,10 @@ void nfa_print(Nfa A) {
 
   for (int q=0; q<A->Q; q++){
     for (int s=0; s<A->lenSigma; s++){
-      if (A->Delta[q][s]!=NULL){
+      if (A->delta[q][s]!=NULL){
 	int cell_size = 0;
 	
-	while (A->Delta[q][s][cell_size]!=-1) cell_size++;
+	while (A->delta[q][s][cell_size]!=-1) cell_size++;
 	max_cell_size = (max_cell_size < cell_size ? cell_size : max_cell_size);
       }
     }
@@ -243,13 +311,13 @@ void nfa_print(Nfa A) {
   for (int q=0; q<A->Q+1; q++){
     printf("|%*d |", padding+5, q);
     for (int i=0; i<A->lenSigma; i++){
-      int s = A->symbol_index[A->Sigma[i]-FIRST_SYMBOL];
-      if (A->Delta[q][s] != NULL){
+      int s = A->dico[A->Sigma[i]-ASCII_FIRST];
+      if (A->delta[q][s] != NULL){
 	int j=0;
 	buffer[0]='{';
 	buffer[1]='\0';
-	while (A->Delta[q][s][j]!=-1) {
-	  sprintf(buffer,"%s%d,",buffer, A->Delta[q][s][j++]);
+	while (A->delta[q][s][j]!=-1) {
+	  sprintf(buffer,"%s%d,",buffer, A->delta[q][s][j++]);
 	}
 	printf("%*s\b}|", total_cell_size ,buffer );
       } else {
@@ -263,9 +331,9 @@ void nfa_print(Nfa A) {
   free(line);
 }
 
-void nfa_dot(Nfa A, const char *path) {
+void afn_dot(AFN A, const char *path) {
 	char *tmp = concat("out/", path);
-	char *out = concat(tmp, ".gz");
+	char *out = concat(tmp, ".gv");
 	
 	free(tmp);
 	FILE *f = fopen(out, "w");
@@ -296,11 +364,11 @@ void nfa_dot(Nfa A, const char *path) {
 	for(int q = 0; q <= A->Q; ++q) {
 		for(int i = 0; i < A->lenSigma; ++i) {
 			char c = A->Sigma[i];
-			int s = A->symbol_index[c - FIRST_SYMBOL];
+			int s = A->dico[c - ASCII_FIRST];
 			
-			if(A->Delta[q][s] != NULL) {
+			if(A->delta[q][s] != NULL) {
 				int r;
-				for(int j = 0; (r = A->Delta[q][s][j]) != INVALID_STATE; ++j) {
+				for(int j = 0; (r = A->delta[q][s][j]) != INVALID_STATE; ++j) {
 					fprintf(f, "\t%i -> %i [label=\"%c\"]\n", q, r, c);
 				}
 			}
@@ -329,20 +397,20 @@ void nfa_dot(Nfa A, const char *path) {
 	free(out);
 }
 
-void nfa_free(Nfa *A) {
-	free((*A)->I);
-	free((*A)->F);
-	free((*A)->Sigma);
+void afn_free(AFN A) {
+	free(A->I);
+	free(A->F);
+	free(A->Sigma);
 	
-	for(int q = 0; q <= (*A)->Q; ++q) {
-		for(int s = 0; s < (*A)->lenSigma; ++s) {
-			free((*A)->Delta[q][s]);
+	for(int q = 0; q <= A->Q; ++q) {
+		for(int s = 0; s < A->lenSigma; ++s) {
+			free(A->delta[q][s]);
 		}
 		
-		free((*A)->Delta[q]);
+		free(A->delta[q]);
 	}
 	
-	free((*A)->Delta);
-	free(*A);
+	free(A->delta);
+	free(A);
 	A = NULL;
 }
