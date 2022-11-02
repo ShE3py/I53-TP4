@@ -5,10 +5,17 @@
 
 /**
  * Représente un automate fini déterministe (AFD).
+ *
+ * Les états sont représentés par des nombres entiers positifs.
  */
 struct AFD {
 	/**
 	 * Le plus grand état de l'automate.
+	 *
+	 * Tout état q de l'automate respecte la propriété suivante :
+	 * 0 <= q <= Q
+	 *
+	 * L'automate possède exactement Q + 1 états ; en d'autres mots, tous les entiers sont utilisés.
 	 */
 	int Q;
 	
@@ -40,11 +47,21 @@ struct AFD {
 	/**
 	 * La fonction de transition de l'automate.
 	 * δ(q, τ) = delta[q][dico[τ - ASCII_FIRST]]
+	 *
+	 * La fonction est définie pout tout état q et pour tout symbole τ dans Σ.
 	 */
 	int **delta;
 	
 	/**
-	 * Table de conversion code ASCII de τ <-> indice du symbole τ dans la fonction de transition.
+	 * Ce tableau permet de récupérer l'indice du symbole τ dans l'alphabet Σ.
+	 *
+	 * Exemple:
+	 * ```
+	 * Sigma := "ab"
+	 * dico['a' - ASCII_FIRST] =  0
+	 * dico['b' - ASCII_FIRST] =  1
+	 * dico['c' - ASCII_FIRST] = -1
+	 * ```
 	 */
 	int dico[MAX_SYMBOLES];
 };
@@ -54,8 +71,22 @@ typedef struct AFD* AFD;
 
 /**
  * Initialise et renvoie un nouvel AFD à partir de sa définition.
+ *
+ * Paramètres:
+ * - Q          : le plus grand état
+ * - q0         : l'état initial
+ * - nbFinals   : le nombre d'états finaux
+ * - listFinals : un tableau des états finaux
+ * - Sigma      : une chaîne de caractères terminée par '\0' qui représentera l'alphabet
+ *
+ * Remarques:
+ * - La fonction de transition de l'automate est allouée mais indéfinie dans le nouvel AFD.
+ * - Le comportement si un état final est présent deux fois dans `listFinals` est indéfini.
+ *
+ * Voir aussi:
+ * - `afd_ajouter_transition(AFD, int, char, int)`
  */
-AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma);
+AFD afd_init(int Q, int q0, int nbFinals, const int *listFinals, const char *Sigma);
 
 
 /**
@@ -65,7 +96,7 @@ void afd_ajouter_transition(AFD A, int q1, char s, int q2);
 
 
 /**
- * Initialise et renvoie un nouvel AFD à partir d'un fichier `filename` écrit au format :
+ * Initialise et renvoie un nouvel AFD à partir d'un fichier écrit au format suivant :
  * ```
  * Q
  * q0

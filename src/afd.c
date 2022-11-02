@@ -9,6 +9,22 @@
 
 /**
  * Initialise et renvoie un nouvel AFD à partir de sa définition sans effectuer de copie.
+ *
+ * Paramètres:
+ * - Q        : le plus grand état
+ * - q0       : l'état initial
+ * - F        : un tableau des états finaux
+ * - lenF     : le nombre d'états finaux
+ * - Sigma    : une chaîne de caractères terminée par '\0' qui représentera l'alphabet
+ * - lenSigma : le nombre de symboles dans l'alphabet
+ *
+ * Remarques:
+ * - La fonction de transition de l'automate est allouée mais indéfinie dans le nouvel AFD.
+ * - Le comportement si un état final est présent deux fois dans `listFinals` est indéfini.
+ *
+ * Voir aussi:
+ * - `afd_ajouter_transition(AFD, int, char, int)`
+ * - `afd_init(int, int, int, const int*, const char*)`
  */
 AFD afd_init_owned(int Q, int q0, int *F, int lenF, char *Sigma, int lenSigma) {
 	check_param("Q", Q >= 0);
@@ -26,25 +42,7 @@ AFD afd_init_owned(int Q, int q0, int *F, int lenF, char *Sigma, int lenSigma) {
 	A->Sigma = Sigma;
 	A->lenSigma = lenSigma;
 	
-	for(int i = 0; i < MAX_SYMBOLES; ++i) {
-		A->dico[i] = -1;
-	}
-	
-	for(int i = 0; i < lenSigma; ++i) {
-		char c = Sigma[i];
-		if(c < ASCII_FIRST || c > ASCII_LAST) {
-			fprintf(stderr, "afd_init_owned(): symbole non supporté: '%1$c' (%1$i)\n", c);
-			exit(1);
-		}
-		
-		int offset = c - ASCII_FIRST;
-		if(A->dico[offset] != -1) {
-			fprintf(stderr, "afd_init_owned(): symbole dupliqué: '%c' dans l'alphabet \"%s\"", c, Sigma);
-			exit(1);
-		}
-		
-		A->dico[offset] = i;
-	}
+	af_init_dico(A->dico, Sigma, lenSigma);
 	
 	A->delta = checked_malloc((Q + 1) * sizeof(int*));
 	for(int q = 0; q <= Q; ++q) {
@@ -58,7 +56,25 @@ AFD afd_init_owned(int Q, int q0, int *F, int lenF, char *Sigma, int lenSigma) {
 	return A;
 }
 
-AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma) {
+
+/**
+ * Initialise et renvoie un nouvel AFD à partir de sa définition.
+ *
+ * Paramètres:
+ * - Q          : le plus grand état
+ * - q0         : l'état initial
+ * - nbFinals   : le nombre d'états finaux
+ * - listFinals : un tableau des états finaux
+ * - Sigma      : une chaîne de caractères terminée par '\0' qui représentera l'alphabet
+ *
+ * Remarques:
+ * - La fonction de transition de l'automate est allouée mais indéfinie dans le nouvel AFD.
+ * - Le comportement si un état final est présent deux fois dans `listFinals` est indéfini.
+ *
+ * Voir aussi:
+ * - `afd_ajouter_transition(AFD, int, char, int)`
+ */
+AFD afd_init(int Q, int q0, int nbFinals, const int *listFinals, const char *Sigma) {
 	check_param("nbFinals", nbFinals > 0);
 	check_param("listFinals", listFinals != NULL);
 	check_param("Sigma", Sigma != NULL);
@@ -75,6 +91,10 @@ AFD afd_init(int Q, int q0, int nbFinals, int *listFinals, char *Sigma) {
 	return afd_init_owned(Q, q0, F, nbFinals, S, lenSigma);
 }
 
+
+/**
+ * Modifie la fonction de transition de l'AFD spécifié de façon à ce que δ(q1, s) = q2.
+ */
 void afd_ajouter_transition(AFD A, int q1, char s, int q2) {
 	check_param("q1", q1 >= 0 && q1 <= A->Q);
 	check_param("s", s >= ASCII_FIRST && s <= ASCII_LAST);
@@ -83,6 +103,21 @@ void afd_ajouter_transition(AFD A, int q1, char s, int q2) {
 	A->delta[q1][A->dico[s - ASCII_FIRST]] = q2;
 }
 
+
+/**
+ * Initialise et renvoie un nouvel AFD à partir d'un fichier écrit au format suivant :
+ * ```
+ * Q
+ * q0
+ * lenF
+ * F[0] F[1] ... F[lenF - 1]
+ * Sigma
+ * q0 τ0 q'0
+ * q1 τ1 q'1
+ * ...
+ * qk τk q'k
+ * ```
+ */
 AFD afd_finit(char *filename) {
 	char *rpath = concat("resources/", filename);
 	FILE *f = fopen(rpath, "r");
@@ -92,7 +127,7 @@ AFD afd_finit(char *filename) {
 	}
 	
 	char *buf = NULL;
-	size_t bufCapacity;
+	size_t bufCapacity = 0;
 	size_t line = 0;
 	
 	int Q = fparse_int(f, filename, &line, &buf, &bufCapacity, 0);
@@ -102,15 +137,7 @@ AFD afd_finit(char *filename) {
 	int *F = fparse_int_set(f, filename, &line, &buf, &bufCapacity, &lenF, Q);
 	
 	int lenSigma;
-	char *Sigma;
-	if((lenSigma = getline(&buf, &bufCapacity, f)) != -1) {
-		Sigma = checked_malloc(--lenSigma);
-		memcpy(Sigma, buf, lenSigma);
-	}
-	else {
-		fprintf(stderr, "%s: fin du fichier, alphabet attendu\n", filename);
-		exit(1);
-	}
+	char *Sigma = fparse_Sigma(f, filename, &line, &buf, &bufCapacity, &lenSigma);
 	
 	AFD A = afd_init_owned(Q, q0, F, lenF, Sigma, lenSigma);
 	
@@ -127,23 +154,30 @@ AFD afd_finit(char *filename) {
 }
 
 
+/**
+ * Renvoie `1` si la chaîne spécifiée est acceptée par l'AFD spécifié, sinon renvoie `0`.
+ */
 int afd_simuler(AFD A, const char *s) {
+	// applique successivemenet les transitions des caractères lus ; on commence avec l'état initial
 	int q = A->q0;
 	
 	char c;
 	for(int i = 0; (c = s[i]) != '\0'; ++i) {
 		if(c < ASCII_FIRST || c > ASCII_LAST) {
+			// la chaîne contient un symbole qui ne peut être accepté par aucun AF
 			return 0;
 		}
 		
 		int s = A->dico[c - ASCII_FIRST];
 		if(s == -1) {
+			// la chaîne contient un symbole qui n'est pas dans l'alphabet de cet AF
 			return 0;
 		}
 		
 		q = A->delta[q][s];
 	}
 	
+	// on regarde si q0.s est dans les états finaux
 	for(int i = 0; i < A->lenF; ++i) {
 		if(A->F[i] == q) {
 			return 1;
@@ -153,42 +187,61 @@ int afd_simuler(AFD A, const char *s) {
 	return 0;
 }
 
+
+/**
+ * Affiche l'AFD spécifié dans le flux de sortie standard.
+ */
 void afd_print(AFD A){
-  printf("Q = {0,..,%d}\n", A->Q);
-  printf("q0 = %d\n", A->q0);
-  printf("F = {");
-  for (int i=0; i<A->lenF; i++) printf("%d,",A->F[i]);
-  printf("\b}\n");
-  int cellsize = (int)(ceil(log10( (double)A->Q)))+1;
-  int first_column_size = cellsize>=5 ? cellsize+2 : 7;
-  int padding = (cellsize>=5)? (cellsize-5)/2+1: 1;
-  int line_length = first_column_size+1+(cellsize+2)*A->lenSigma;
-  char * line = malloc(sizeof(char)*(line_length+2));
-  for (int i=0; i<=line_length; i++) line[i]='-';
-  line[line_length+1]='\0';
-
-  printf("%s\n",line);
-  printf("|%*sdelta |", padding, "");
-  for(int i=0; i<A->lenSigma; i++) printf("%*c |", cellsize, A->Sigma[i]);
-  printf("\n");
-  printf("%s\n",line);
-  
-
-  for (int q=0; q<A->Q+1; q++){
-    printf("|%*d |", padding+5, q);
-    for (int i=0; i<A->lenSigma; i++){
-      int s = A->dico[A->Sigma[i]-ASCII_FIRST];
-      if (A->delta[q][s] !=-1)
-	printf("%*d |", cellsize, A->delta[q][s]);
-      else
-	printf("%*s |", cellsize, "");
-    }    
-    printf("\n");
-    printf("%s\n",line);
-  }
-  free(line);
+	printf("Q = [0, %d]\n", A->Q);
+	printf("q0 = %d\n", A->q0);
+	
+	printf("F = {");
+	for(int i = 0; i < A->lenF; ++i) {
+		printf("%d,",A->F[i]);
+	}
+	printf("\b}\n");
+	
+	int cellsize = (int) (ceil(log10((double) A->Q))) + 1;
+	int first_column_size = (cellsize >= 5) ? (cellsize + 2) : 7;
+	int padding = (cellsize >= 5) ? (((cellsize - 5) / 2) + 1) : 1;
+	int line_length = first_column_size + 1 + (cellsize + 2) * A->lenSigma;
+	
+	char *line = malloc(line_length + 2);
+	for(int i = 0; i <= line_length; ++i) {
+		line[i] = '-';
+	}
+	line[line_length + 1]='\0';
+	
+	printf("%s\n",line);
+	printf("|%*sdelta |", padding, "");
+	for(int i = 0; i < A->lenSigma; ++i) {
+		printf("%*c |", cellsize, A->Sigma[i]);
+	}
+	printf("\n");
+	printf("%s\n", line);
+	
+	
+	for(int q = 0; q <= A->Q; ++q) {
+		printf("|%*d |", padding+5, q);
+		for(int i = 0; i < A->lenSigma; ++i) {
+			int s = A->dico[A->Sigma[i] - ASCII_FIRST];
+			if(A->delta[q][s] != -1) {
+				printf("%*d |", cellsize, A->delta[q][s]);
+			}
+			else {
+				printf("%*s |", cellsize, "");
+			}
+		}    
+		printf("\n");
+		printf("%s\n",line);
+	}
+	
+	free(line);
 }
 
+/**
+ * Libère les ressources allouées à un AFD.
+ */
 void afd_free(AFD A) {
 	free(A->F);
 	free(A->Sigma);
