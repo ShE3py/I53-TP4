@@ -136,6 +136,11 @@ void afn_ajouter_transition(AFN A, int q1, char c, int q2) {
 	check_param("q2", q2 >= 0 && q2 <= A->Q);
 	
 	int s = A->dico[c - ASCII_FIRST];
+	if(s == -1) {
+		fprintf(stderr, "afn_ajouter_transition(): '%c' n'appartient pas à \"%s\"\n", c, A->Sigma);
+		exit(1);
+	}
+	
 	int **transitions = &(A->delta[q1][s]);
 	
 	if(*transitions == NULL) {

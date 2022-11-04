@@ -100,7 +100,13 @@ void afd_ajouter_transition(AFD A, int q1, char s, int q2) {
 	check_param("s", s >= ASCII_FIRST && s <= ASCII_LAST);
 	check_param("q2", q2 >= 0 && q2 <= A->Q);
 	
-	A->delta[q1][A->dico[s - ASCII_FIRST]] = q2;
+	int c = A->dico[s - ASCII_FIRST];
+	if(c == -1) {
+		fprintf(stderr, "afd_ajouter_transition(): '%c' n'appartient pas à \"%s\"\n", s, A->Sigma);
+		exit(1);
+	}
+	
+	A->delta[q1][c] = q2;
 }
 
 
