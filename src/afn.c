@@ -85,7 +85,7 @@ AFN afn_init_owned(int Q, int *I, int lenI, int *F, int lenF, char *Sigma, int l
  * Voir aussi:
  * - `afn_ajouter_transition(AFN, int, char, int)`
  */
-AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFinals, char *Sigma) {
+AFN afn_init(int Q, int nbInitiaux, const int *listInitiaux, int nbFinals, const int *listFinals, const char *Sigma) {
 	check_param("nbInitiaux", nbInitiaux > 0);
 	check_param("listInitiaux", listInitiaux != NULL);
 	check_param("nbFinals", nbFinals > 0);
@@ -175,7 +175,7 @@ void afn_ajouter_transition(AFN A, int q1, char c, int q2) {
  * qk τk q'k
  * ```
  */
-AFN afn_finit(char *filename) {
+AFN afn_finit(const char *filename) {
 	char *rpath = concat("resources/", filename);
 	FILE *f = fopen(rpath, "r");
 	if(f == NULL) {
@@ -253,7 +253,7 @@ void afn_epsilon_closure_assign(AFN A, set *G) {
 /**
  * Calcul et renvoie l'epsilon-fermeture d'un ensemble d'états `R` trié par ordre croissant et dont le dernier élément `INVALID_STATE`.
  */
-int* afn_epsilon_fermeture(AFN A, int *R) {
+int* afn_epsilon_fermeture(AFN A, const int *R) {
 	// copie de `R` dans une pile
 	stack s = stack_new_empty();
 	if(R != NULL) {
@@ -348,6 +348,105 @@ int afn_simuler(AFN A, const char *s) {
 	set_free(&R);
 	set_free(&F);
 	return accepted;
+}
+
+
+/**
+ * Construit et renvoie un AFN acceptant le langage constitué du seul symbole `c`.
+ */
+AFN afn_char(char c, const char *Sigma) {
+	const int Q = 1;
+	const int q0 = 0;
+	const int q1 = 1;
+	
+	AFN A = afn_init(Q, 1, &q0, 1, &q1, Sigma);
+	afn_ajouter_transition(A, q0, c, q1);
+	
+	return A;
+}
+
+
+/**
+ * Additionne un nombre à tous les éléments du tableau spécifié.
+ *
+ * Paramètres:
+ * - transitions: un tableau de transitions terminé par `INVALID_STATE`.
+ * - offset     : la valeur à ajouter à tous les éléments du tableau
+ *
+ * Renvoie: un nouveau tableau terminé par `INVALID_STATE` qu'il faudra désallouer avec `free()`.
+ */
+int* rshift_all(const int *transitions, size_t offset) {
+	if(transitions == NULL) {
+		return NULL;
+	}
+	
+	size_t len = 0;
+	const int *ptr = transitions;
+	while(*ptr != INVALID_STATE) {
+		++len;
+		++ptr;
+	}
+	
+	int *out = checked_malloc((len + 1) * sizeof(int));
+	for(size_t i = 0; i < len; ++i) {
+		out[i] = transitions[i] + offset;
+	}
+	
+	out[len] = INVALID_STATE;
+	return out;
+}
+
+
+/**
+ * Construit et renvoie l'union de deux AFN.
+ */
+AFN afn_union(AFN A, AFN B) {
+	check_param("A->Sigma equals B->Sigma", strcmp(A->Sigma, B->Sigma) == 0);
+	
+	const int Q = A->Q + B->Q + 2;
+	const int q0 = 0;
+	const int qQ = Q;
+	const char *Sigma = A->Sigma;
+	
+	AFN U = afn_init(Q, 1, &q0, 1, &qQ, Sigma);
+	
+	// Décalage des états de `A` et `B` dans l'union `U`
+	const int qA_offset = 1;
+	const int qB_offset = A->Q + 2;
+	
+	// Copie des transitions de `A` vers les transitions de `U`
+	for(int qA = 0; qA <= A->Q; ++qA) {
+		for(int s = 0; s < A->lenSigma; ++s) {
+			U->delta[qA + qA_offset][s] = rshift_all(A->delta[qA][s], qA_offset);
+		}
+	}
+	
+	// Copie des transitions de `B` vers les transitions de `U`
+	for(int qB = 0; qB <= B->Q; ++qB) {
+		for(int s = 0; s < A->lenSigma; ++s) {
+			U->delta[qB + qB_offset][s] = rshift_all(B->delta[qB][s], qB_offset);
+		}
+	}
+	
+	// Ajout des ε-transitions de l'état initial `q0` de `U` vers les états initiaux de `A` et `B`
+	for(int i = 0; i < A->lenI; ++i) {
+		afn_ajouter_transition(U, q0, EPSILON, A->I[i] + qA_offset);
+	}
+	
+	for(int i = 0; i < B->lenI; ++i) {
+		afn_ajouter_transition(U, q0, EPSILON, B->I[i] + qB_offset);
+	}
+	
+	// Ajout des ε-transitions des états finaux de `A` et `B` vers l'état final `qQ` de `U`
+	for(int i = 0; i < A->lenF; ++i) {
+		afn_ajouter_transition(U, A->F[i] + qA_offset, EPSILON, qQ);
+	}
+	
+	for(int i = 0; i < B->lenF; ++i) {
+		afn_ajouter_transition(U, B->F[i] + qB_offset, EPSILON, qQ);
+	}
+	
+	return U;
 }
 
 

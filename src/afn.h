@@ -97,7 +97,7 @@ typedef struct AFN* AFN;
  * Voir aussi:
  * - `afn_ajouter_transition(AFN, int, char, int)`
  */
-AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFinals, char *Sigma);
+AFN afn_init(int Q, int nbInitiaux, const int *listInitiaux, int nbFinals, const int *listFinals, const char *Sigma);
 
 
 /**
@@ -121,19 +121,31 @@ void afn_ajouter_transition(AFN A, int q1, char s, int q2);
  * qk τk q'k
  * ```
  */
-AFN afn_finit(char *filename);
+AFN afn_finit(const char *filename);
 
 
 /**
  * Calcul et renvoie l'epsilon-fermeture d'un ensemble d'états `R` trié par ordre croissant et dont le dernier élément `INVALID_STATE`.
  */
-int* afn_epsilon_fermeture(AFN A, int *R);
+int* afn_epsilon_fermeture(AFN A, const int *R);
 
 
 /**
  * Renvoie `1` si la chaîne spécifiée est acceptée par l'AFN spécifié, sinon renvoie `0`.
  */
 int afn_simuler(AFN A, const char *s);
+
+
+/**
+ * Construit et renvoie un AFN acceptant le langage constitué du seul symbole `c`.
+ */
+AFN afn_char(char c, const char *Sigma);
+
+
+/**
+ * Construit et renvoie l'union de deux AFN.
+ */
+AFN afn_union(AFN A, AFN B);
 
 
 /**

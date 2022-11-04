@@ -72,4 +72,9 @@ int main(int argc, char *argv[]) {
 	assert_rejected(D, "F");
 	assert_rejected(D, "ED");
 	assert_rejected(D, "FG");
+	printf("\n");
+	
+	// test visuel de l'union
+	print(AFN E = afn_union(A, B));
+	afn_dot(E, "sample1+2");
 }
