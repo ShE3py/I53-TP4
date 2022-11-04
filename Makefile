@@ -16,7 +16,7 @@ $(mkdirs):
 	mkdir -p $(OUT)/util/
 	touch $@
 
-test.exe: $(addprefix $(OUT)/,$(OBJS) main.o)
+test.exe: $(addprefix $(OUT)/,$(OBJS) test.o)
 	$(CC) $^ $(CFLAGS) -o $@ $(LFLAGS)
 
 $(OUT)/%.o: $(SRC)/%.c $(SRC)/%.h
@@ -27,5 +27,4 @@ $(OUT)/%.o: $(SRC)/%.c
 
 clean:
 	rm -rf $(OUT)
-	rm -f resources/*.png
 	rm -f *.exe
