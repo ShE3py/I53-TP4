@@ -289,8 +289,9 @@ int* afn_epsilon_fermeture(AFN A, int *R) {
  */
 int afn_simuler(AFN A, const char *s) {
 	// `R` contient tous les états dans lesquels l'AFN peut virtuellement être,
-	// on commence avec les états initiaux
+	// on commence avec les états initiaux et tous ceux accessibles par epsilon-transitions
 	set R = set_copy_from(A->I, A->lenI);
+	afn_epsilon_closure_assign(A, &R);
 	
 	char c;
 	for(size_t i = 0; (c = s[i]) != '\0'; ++i) {
@@ -300,8 +301,8 @@ int afn_simuler(AFN A, const char *s) {
 		}
 		
 		// chaque caractère `c` lu dans `s` doit modifier `R`,
-		// mais il faut aussi prendre en compte les epsilon-transitions
-		afn_epsilon_closure_assign(A, &R);
+		// cepedant il faut conserver `R` pour généré le nouveau `R`,
+		// d'où une variable temporaire
 		
 		set R_next = set_new_empty();
 		int s = A->dico[c - ASCII_FIRST];
@@ -332,12 +333,15 @@ int afn_simuler(AFN A, const char *s) {
 			}
 		}
 		
-		// on a fini de traité le caractère lu, on passe aux états suivants
+		// on a fini de traité le caractère lu, on passe aux états suivants et ceux accessibles par epsilon-transitions
 		set_free(&R);
+		
 		R = R_next;
+		afn_epsilon_closure_assign(A, &R);
 	}
 	
-	// `s` appartient à l'AFN si et seulement si un de nos états `R` appartient aux états finaux
+	// `s` appartient à l'AFN si et seulement si un de nos états dans l'epsilon-fermeture de `R` appartient aux états finaux
+	// à ce stade, il est garanti que `R` contienne déjà son epsilon-fermeture
 	set F = set_copy_from(A->F, A->lenF);
 	int accepted = set_are_intersecting(R, F);
 	
@@ -449,10 +453,21 @@ void afn_dot(AFN A, const char *path) {
 			char c = A->Sigma[i];
 			int s = A->dico[c - ASCII_FIRST];
 			
+			char label[3];
+			if(c == EPSILON) {
+				label[0] = '\xCE';
+				label[1] = '\xB5';
+				label[2] = '\0';
+			}
+			else {
+				label[0] = c;
+				label[1] = '\0';
+			}
+			
 			if(A->delta[q][s] != NULL) {
 				int r;
 				for(int j = 0; (r = A->delta[q][s][j]) != INVALID_STATE; ++j) {
-					fprintf(f, "\t%i -> %i [label=\"%c\"]\n", q, r, c);
+					fprintf(f, "\t%i -> %i [label=\"%s\"]\n", q, r, (const char*) &label);
 				}
 			}
 		}
