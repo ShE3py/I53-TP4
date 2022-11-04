@@ -119,7 +119,7 @@ int fparse_int_base(FILE *f, const char *fpath, size_t *fline, char **buf, size_
 	int ok;
 	
 	if(*bufPtr != NULL) {
-		// *bufPtr != NULL implique que *buf contient une ligne *bufPtr...bufEnd qu'on n'a pas encore fini de lire
+		// *bufPtr != NULL implique que *buf contient une ligne *bufPtr..bufEnd qu'on n'a pas encore fini de lire
 		ok = 1;
 	}
 	else {
@@ -199,7 +199,9 @@ int fparse_int(FILE *f, const char *fpath, size_t *fline, char **buf, size_t *bu
 	size_t bufLen = 0;
 	
 	int val = fparse_int_base(f, fpath, fline, buf, bufCapacity, &bufPtr, &bufLen, stricly_positive);
+	
 	if(bufPtr != NULL) {
+		// `bufPtr` est remit sur `NULL` si toute la ligne a été traitée, donc `bufPtr != NULL` <=> caractères en surplus sur la ligne
 		fprintf(stderr, "%s:%li:%li: nombre entier malformé: caractères en surplus\n", fpath, *fline, bufPtr - *buf);
 		exit(1);
 	}
@@ -242,6 +244,7 @@ int* fparse_int_set(FILE *f, const char *fpath, size_t *fline, char **buf, size_
 	}
 	
 	if(bufPtr != NULL) {
+		// on a lu `len` entiers mais il reste toujours des caractères en surplus dans la ligne
 		fprintf(stderr, "%s:%li:%li: l'ensemble est plus grand que la taille spécifiée par la ligne précédente\n", fpath, *fline, bufPtr - *buf);
 	}
 	
@@ -278,6 +281,8 @@ char* fparse_Sigma(FILE *f, const char *fpath, size_t *fline, char **buf, size_t
 		
 		char *Sigma = checked_malloc(len);
 		memcpy(Sigma, line, len);
+		
+		// les doublons sont gérés dans `af_init_dico(...)`
 		
 		*outLen = len - 1;
 		return Sigma;
@@ -316,8 +321,10 @@ int fparse_transition(FILE *f, const char *fpath, size_t *fline, char **buf, siz
 			exit(1);
 		}
 		
+		// `bufPtr` pointe vers le caractère après l'espace
 		*c = *bufPtr;
 		
+		// vérifie que la caractère suivant est un espace et qu'il y ait bien un caractère après cet espace
 		char *bufEnd = *buf + bufLen;
 		++bufPtr;
 		if(bufPtr == bufEnd || !isspace(*bufPtr) || *bufPtr == '\0' || ++bufPtr == bufEnd) {

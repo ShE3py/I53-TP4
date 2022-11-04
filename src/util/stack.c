@@ -6,7 +6,10 @@
 
 #include "util/misc.h"
 
-stack stack_init() {
+/**
+ * Créer une nouvelle pile vide.
+ */
+stack stack_new_empty() {
 	stack s;
 	s.buf = NULL;
 	s.len = 0;
@@ -16,7 +19,10 @@ stack stack_init() {
 }
 
 
-stack stack_init_one(int val) {
+/**
+ * Créer une nouvelle pile à un seul élément.
+ */
+stack stack_new_with_value(int val) {
 	stack s;
 	s.buf = checked_malloc(1 * sizeof(int));
 	s.buf[0] = val;
@@ -26,9 +32,13 @@ stack stack_init_one(int val) {
 	return s;
 }
 
-stack stack_init_from(const int *values, size_t n) {
+
+/**
+ * Créer une nouvelle pile à partir de plusieurs éléments.
+ */
+stack stack_copy_from(const int *values, size_t n) {
 	if(n == 0) {
-		return stack_init();
+		return stack_new_empty();
 	}
 	
 	stack s;
@@ -40,6 +50,10 @@ stack stack_init_from(const int *values, size_t n) {
 	return s;
 }
 
+
+/**
+ * Ajoute un élément à la pile.
+ */
 void stack_push(stack *s, int val) {
 	if(s->len == s->capacity) {
 		stack_reserve(s, 5);
@@ -49,6 +63,10 @@ void stack_push(stack *s, int val) {
 	++(s->len);
 }
 
+
+/**
+ * Ajoute plusieurs éléments à la pile.
+ */
 void stack_push_all(stack *s, const int *values, size_t n) {
 	if((s->len + n) > s->capacity) {
 		stack_reserve(s, (s->len + n) - s->capacity);
@@ -58,6 +76,10 @@ void stack_push_all(stack *s, const int *values, size_t n) {
 	s->len += n;
 }
 
+
+/**
+ * Réserve de la place pour au moins `n` nouveaux éléments.
+ */
 void stack_reserve(stack *s, size_t n) {
 	if(n > 0) {
 		s->capacity += n;
@@ -71,6 +93,11 @@ void stack_reserve(stack *s, size_t n) {
 	}
 }
 
+
+/**
+ * Dépile le dernier élément ajouté à la pile.
+ * Termine le programme si jamais la pile est vide.
+ */
 int stack_pop(stack *s) {
 	int val = stack_peek(*s);
 	--(s->len);
@@ -78,6 +105,11 @@ int stack_pop(stack *s) {
 	return val;
 }
 
+
+/**
+ * Tente de dépiler le dernier élément ajouté à la pile dans `out`;
+ * renvoie `1` si la pile n'est pas vide, ou `0` si la pile est vide.
+ */
 int stack_try_pop(stack *s, int *out) {
 	if(stack_try_peek(*s, out)) {
 		--(s->len);
@@ -87,10 +119,19 @@ int stack_try_pop(stack *s, int *out) {
 	return 0;
 }
 
+
+/**
+ * Vide la pile sans faire aucune désallocation.
+ */
 void stack_pop_all(stack *s) {
 	s->len = 0;
 }
 
+
+/**
+ * Renvoie sans dépiler le dernier élément ajouté à la pile.
+ * Termine le programme si jamais la pile est vide.
+ */
 int stack_peek(stack s) {
 	if(stack_is_empty(s)) {
 		fprintf(stderr, "peek() on empty stack");
@@ -100,6 +141,11 @@ int stack_peek(stack s) {
 	return s.buf[s.len - 1];
 }
 
+
+/**
+ * Tente de mettre une copie du dernier élément ajouté à la pile dans `out`;
+ * renvoie `1` si la pile n'est pas vide, ou `0` le cas échéant.
+ */
 int stack_try_peek(stack s, int *out) {
 	if(stack_is_empty(s)) {
 		return 0;
@@ -109,10 +155,18 @@ int stack_try_peek(stack s, int *out) {
 	return 1;
 }
 
+
+/**
+ * Renvoie `1` si jamais la pile est vide, sinon renvoie `0`.
+ */
 int stack_is_empty(stack s) {
 	return s.len == 0;
 }
 
+
+/**
+ * Affiche la pile dans la sortie standard.
+ */
 void stack_print(stack s) {
 	if(s.len == 0) {
 		printf("[]\n");
@@ -128,6 +182,10 @@ void stack_print(stack s) {
 	}
 }
 
+
+/**
+ * Désalloue tous les éléments de la pile.
+ */
 void stack_free(stack *s) {
 	free(s->buf);
 	s->buf = NULL;

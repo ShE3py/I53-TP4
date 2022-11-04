@@ -11,6 +11,21 @@
 /**
  * Initialise et renvoie un nouvel AFN à partir de sa définition sans effectuer de copie.
  */
+/**
+ * Initialise et renvoie un nouvel AFN à partir de sa définition sans effectuer de copie.
+ *
+ * Paramètres:
+ * - Q     : le plus grand état
+ * - I     : un tableau des états initiaux
+ * - lenI  : le nombre d'états initiaux
+ * - F     : un tableau des états finaux
+ * - lenF  : le nombre d'états finaux
+ * - Sigma : une chaîne de caractères terminée par '\0' qui représentera l'alphabet
+ *
+ * Voir aussi:
+ * - `afn_init(int, int, int*, int, int*, char*)`
+ * - `afn_ajouter_transition(AFN, int, char, int)`
+ */
 AFN afn_init_owned(int Q, int *I, int lenI, int *F, int lenF, char *Sigma, int lenSigma) {
 	check_param("Q", Q >= 0);
 	check_param("I", I != NULL);
@@ -41,19 +56,7 @@ AFN afn_init_owned(int Q, int *I, int lenI, int *F, int lenF, char *Sigma, int l
 	A->Sigma = Sigma;
 	A->lenSigma = lenSigma;
 	
-	for(int i = 0; i < MAX_SYMBOLES; ++i) {
-		A->dico[i] = -1;
-	}
-	
-	for(int i = 0; i < lenSigma; ++i) {
-		char c = Sigma[i];
-		if(c < ASCII_FIRST || c > ASCII_LAST) {
-			fprintf(stderr, "afn_init_owned(): symbole non supporté: '%1$c' (%1$i)\n", c);
-			exit(1);
-		}
-		
-		A->dico[c - ASCII_FIRST] = i;
-	}
+	af_init_dico(A->dico, Sigma, lenSigma);
 	
 	A->delta = checked_malloc((Q + 1) * sizeof(int**));
 	for(int q = 0; q <= Q; ++q) {
@@ -67,6 +70,21 @@ AFN afn_init_owned(int Q, int *I, int lenI, int *F, int lenF, char *Sigma, int l
 	return A;
 }
 
+
+/**
+ * Initialise et renvoie un nouvel AFN à partir de sa définition.
+ *
+ * Paramètres:
+ * - Q            : le plus grand état
+ * - nbInitiaux   : le nombre d'états initiaux
+ * - listInitiaux : un tableau des états initiaux
+ * - nbFinals     : le nombre d'états finaux
+ * - listFinals   : un tableau des états finaux
+ * - Sigma        : une chaîne de caractères terminée par '\0' qui représentera l'alphabet
+ *
+ * Voir aussi:
+ * - `afn_ajouter_transition(AFN, int, char, int)`
+ */
 AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFinals, char *Sigma) {
 	check_param("nbInitiaux", nbInitiaux > 0);
 	check_param("listInitiaux", listInitiaux != NULL);
@@ -92,6 +110,7 @@ AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFi
 	
 	char *S;
 	if(i == lenSigma) {
+		// ajout d'EPSILON dans Sigma si celui-ci n'est pas déjà présent
 		++lenSigma;
 		
 		S = checked_malloc(lenSigma + 1);
@@ -99,6 +118,7 @@ AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFi
 		S[0] = EPSILON;
 	}
 	else {
+		// sinon copie simple avec le '\0'
 		S = checked_malloc(lenSigma + 1);
 		memcpy(S, Sigma, lenSigma + 1);
 	}
@@ -106,6 +126,10 @@ AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFi
 	return afn_init_owned(Q, I, nbInitiaux, F, nbFinals, S, lenSigma);
 }
 
+
+/**
+ * Modifie la fonction de transition de l'AFN spécifié de façon à ce que Δ(q1, s) contienne l'état q2.
+ */
 void afn_ajouter_transition(AFN A, int q1, char c, int q2) {
 	check_param("q1", q1 >= 0 && q1 <= A->Q);
 	check_param("c", c >= ASCII_FIRST && c <= ASCII_LAST);
@@ -135,6 +159,22 @@ void afn_ajouter_transition(AFN A, int q1, char c, int q2) {
 	}
 }
 
+
+/**
+ * Initialise et renvoie un nouvel AFN à partir d'un fichier `filename` écrit au format :
+ * ```
+ * Q
+ * lenI
+ * I[0] I[1] ... I[lenI - 1]
+ * lenF
+ * F[0] F[1] ... F[lenF - 1]
+ * Sigma
+ * q0 τ0 q'0
+ * q1 τ1 q'1
+ * ...
+ * qk τk q'k
+ * ```
+ */
 AFN afn_finit(char *filename) {
 	char *rpath = concat("resources/", filename);
 	FILE *f = fopen(rpath, "r");
@@ -156,16 +196,17 @@ AFN afn_finit(char *filename) {
 	int *F = fparse_int_set(f, filename, &line, &buf, &bufCapacity, &lenF, Q);
 	
 	int lenSigma;
-	char *Sigma;
-	if((lenSigma = getline(&buf, &bufCapacity, f)) != -1) {
-		Sigma = checked_malloc(lenSigma);
-		memcpy(Sigma + 1, buf, lenSigma - 1);
-		Sigma[0] = EPSILON;
-	}
-	else {
-		fprintf(stderr, "%s: fin du fichier, alphabet attendu\n", filename);
-		exit(1);
-	}
+	char *Sigma = fparse_Sigma(f, filename, &line, &buf, &bufCapacity, &lenSigma);
+	
+	// ajout d'EPSILON dans Sigma
+	++lenSigma;
+	
+	char *S = checked_malloc(lenSigma + 1);
+	memcpy(S + 1, Sigma, lenSigma);
+	S[0] = EPSILON;
+	
+	free(Sigma);
+	Sigma = S;
 	
 	AFN A = afn_init_owned(Q, I, lenI, F, lenF, Sigma, lenSigma);
 	
@@ -181,31 +222,40 @@ AFN afn_finit(char *filename) {
 	return A;
 }
 
-void nfa_epsilon_closure_in_place(AFN A, set *G) {
-	stack s = stack_init_from(G->buf, G->len);
+
+/**
+ * Calcul l'epsilon-fermeture d'un ensemble d'états `G` passé en paramètre; écrit ce résultat dans cedit paramètre.
+ */
+void afn_epsilon_closure_assign(AFN A, set *G) {
+	stack accessible = stack_copy_from(G->buf, G->len);
 	
-	while(!stack_is_empty(s)) {
-		int q = stack_pop(&s);
+	while(!stack_is_empty(accessible)) {
+		int q = stack_pop(&accessible);
 		
-		int *q1 = A->delta[q][A->dico[EPSILON - ASCII_FIRST]];
-		if(q1 == NULL) {
+		int *q2 = A->delta[q][A->dico[EPSILON - ASCII_FIRST]];
+		if(q2 == NULL) {
 			continue;
 		}
 		
-		while(*q1 != INVALID_STATE) {
-			if(set_push(G, *q1)) {
-				stack_push(&s, *q1);
+		while(*q2 != INVALID_STATE) {
+			if(set_push(G, *q2)) {
+				stack_push(&accessible, *q2);
 			}
 			
-			++q1;
+			++q2;
 		}
 	}
 	
-	stack_free(&s);
+	stack_free(&accessible);
 }
 
+
+/**
+ * Calcul et renvoie l'epsilon-fermeture d'un ensemble d'états `R` trié par ordre croissant et dont le dernier élément `INVALID_STATE`.
+ */
 int* afn_epsilon_fermeture(AFN A, int *R) {
-	stack s = stack_init();
+	// copie de `R` dans une pile
+	stack s = stack_new_empty();
 	if(R != NULL) {
 		while(*R != INVALID_STATE) {
 			stack_push(&s, *R);
@@ -213,63 +263,93 @@ int* afn_epsilon_fermeture(AFN A, int *R) {
 		}
 	}
 	
-	// assume R is sorted
+	// conversion de la pile en un ensemble
+	// SAFETY: l'appellant doit s'assurer que `R` soit trié et sans doublon
 	set S;
 	S.buf = s.buf;
 	S.len = s.len;
 	S.capacity = s.capacity;
 	
-	nfa_epsilon_closure_in_place(A, &S);
+	// calcul de l'epsilon-fermeture
+	afn_epsilon_closure_assign(A, &S);
 	
-	// append INVALID_STATE
+	// reconversion en pile, puis ajout de `INVALID_STATE`
 	s.buf = S.buf;
 	s.len = S.len;
 	s.capacity = S.capacity;
 	stack_push(&s, INVALID_STATE);
 	
+	// l'appelant doit s'assurer de `free()` l'adresse retournée
 	return s.buf;
 }
 
+
+/**
+ * Renvoie `1` si la chaîne spécifiée est acceptée par l'AFN spécifié, sinon renvoie `0`.
+ */
 int afn_simuler(AFN A, const char *s) {
-	set R = set_init_from(A->I, A->lenI);
-	nfa_epsilon_closure_in_place(A, &R);
+	// `R` contient tous les états dans lesquels l'AFN peut virtuellement être,
+	// on commence avec les états initiaux
+	set R = set_copy_from(A->I, A->lenI);
 	
 	char c;
 	for(size_t i = 0; (c = s[i]) != '\0'; ++i) {
-		set tmp = set_init();
+		// vérification des caractères qui ne seront jamais acceptés par un AFN
+		if(c < ASCII_FIRST || c > ASCII_LAST || c == EPSILON) {
+			return 0;
+		}
+		
+		// chaque caractère `c` lu dans `s` doit modifier `R`,
+		// mais il faut aussi prendre en compte les epsilon-transitions
+		afn_epsilon_closure_assign(A, &R);
+		
+		set R_next = set_new_empty();
 		int s = A->dico[c - ASCII_FIRST];
 		
+		// vérification que le caractère soit bien dans l'alphabet de l'AF
+		if(s == -1) {
+			return 0;
+		}
+		
 		for(size_t j = 0; j < R.len; ++j) {
-			int q = R.buf[j];
-			int *q1 = A->delta[q][s];
+			// pour toutes les transitions possibles en lisant `c` dans un état particulier de `R`,
+			int *q2 = A->delta[R.buf[j]][s];
 			
-			if(q1 != NULL) {
-				set q1s = set_init();
-				while(*q1 != INVALID_STATE) {
-					set_push(&q1s, *q1);
-					++q1;
+			if(q2 != NULL) {
+				// on converti la liste des transitions possibles en un ensemble,
+				set s = set_new_empty();
+				while(*q2 != INVALID_STATE) {
+					set_push(&s, *q2);
+					++q2;
 				}
 				
-				set tmp2 = set_union(tmp, q1s);
+				// et on ajoute les états accessibles dans `R_next`
+				set _union = set_union(R_next, s);
 				
-				set_free(&tmp);
-				set_free(&q1s);
-				tmp = tmp2;
+				set_free(&R_next);
+				set_free(&s);
+				R_next = _union;
 			}
 		}
 		
+		// on a fini de traité le caractère lu, on passe aux états suivants
 		set_free(&R);
-		R = tmp;
+		R = R_next;
 	}
 	
-	set F = set_init_from(A->F, A->lenF);
-	int accepted = !set_are_disjoints(R, F);
+	// `s` appartient à l'AFN si et seulement si un de nos états `R` appartient aux états finaux
+	set F = set_copy_from(A->F, A->lenF);
+	int accepted = set_are_intersecting(R, F);
 	
 	set_free(&R);
 	set_free(&F);
 	return accepted;
 }
 
+
+/**
+ * Affiche l'AFN spécifié dans le flux de sortie standard.
+ */
 void afn_print(AFN A) {
   printf("Q = {0,..,%d}\n", A->Q);
   printf("I = {");
@@ -331,11 +411,14 @@ void afn_print(AFN A) {
   free(line);
 }
 
+
+/**
+ * Dessine un AFN dans un fichier `filename.png`.
+ */
 void afn_dot(AFN A, const char *path) {
 	char *tmp = concat("out/", path);
 	char *out = concat(tmp, ".gv");
 	
-	free(tmp);
 	FILE *f = fopen(out, "w");
 	
 	fprintf(f,
@@ -380,7 +463,6 @@ void afn_dot(AFN A, const char *path) {
 	
 	char *in = out;
 	
-	tmp = concat("resources/", path);
 	out = concat(tmp, ".png");
 	free(tmp);
 	
@@ -390,13 +472,17 @@ void afn_dot(AFN A, const char *path) {
 	int retcode = system(command);
 	if(retcode != 0) {
 		fprintf(stderr, "dot: system(): %i\n", retcode);
-		exit(1);
+//		exit(1);
 	}
 	
 	free(in);
 	free(out);
 }
 
+
+/**
+ * Libère les ressources allouées à un AFN.
+ */
 void afn_free(AFN A) {
 	free(A->I);
 	free(A->F);

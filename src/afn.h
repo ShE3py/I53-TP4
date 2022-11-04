@@ -7,6 +7,8 @@
 
 /**
  * Le symbole représentant une possible epsilon-transition dans un AFN.
+ *
+ * Les états sont représentés par des nombres entiers positifs.
  */
 #define EPSILON '&'
 
@@ -17,6 +19,11 @@
 struct AFN {
 	/**
 	 * Le plus grand état de l'automate.
+	 *
+	 * Tout état q de l'automate respecte la propriété suivante :
+	 * 0 <= q <= Q
+	 *
+	 * L'automate possède exactement Q + 1 états ; en d'autres mots, tous les entiers sont utilisés.
 	 */
 	int Q;
 	
@@ -53,13 +60,22 @@ struct AFN {
 	/**
 	 * La fonction de transition de l'automate.
 	 * Δ(q, τ) = delta[q][dico[τ - ASCII-FIRST]]
+	 *
 	 * La fin d'un ensemble dans l'ensemble des parties est marquée par la constante `INVALID_STATE`.
-	 * L'ensemble vide peut être noté par un singleton `{INVALID_STATE}` ou par `NULL`.
+	 * L'ensemble vide peut être noté par un singleton `{ INVALID_STATE }` ou par `NULL`.
 	 */
 	int ***delta;
 	
 	/**
-	 * Table de conversion code ASCII de τ <-> indice du symbole τ dans la fonction de transition.
+	 * Ce tableau permet de récupérer l'indice du symbole τ dans l'alphabet Σ.
+	 *
+	 * Exemple:
+	 * ```
+	 * Sigma := "ab"
+	 * dico['a' - ASCII_FIRST] =  0
+	 * dico['b' - ASCII_FIRST] =  1
+	 * dico['c' - ASCII_FIRST] = -1
+	 * ```
 	 */
 	int dico[MAX_SYMBOLES];
 };
@@ -69,6 +85,17 @@ typedef struct AFN* AFN;
 
 /**
  * Initialise et renvoie un nouvel AFN à partir de sa définition.
+ *
+ * Paramètres:
+ * - Q            : le plus grand état
+ * - nbInitiaux   : le nombre d'états initiaux
+ * - listInitiaux : un tableau des états initiaux
+ * - nbFinals     : le nombre d'états finaux
+ * - listFinals   : un tableau des états finaux
+ * - Sigma        : une chaîne de caractères terminée par '\0' qui représentera l'alphabet
+ *
+ * Voir aussi:
+ * - `afn_ajouter_transition(AFN, int, char, int)`
  */
 AFN afn_init(int Q, int nbInitiaux, int *listInitiaux, int nbFinals, int *listFinals, char *Sigma);
 

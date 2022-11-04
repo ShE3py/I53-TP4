@@ -26,20 +26,20 @@ typedef struct {
 /**
  * Créer un nouvel ensemble vide.
  */
-set set_init();
+set set_new_empty();
 
 /**
  * Créer un nouvel ensemble avec un seul élément.
  */
-set set_init_singleton(int val);
+set set_new_singleton(int val);
 
 /**
  * Créer un nouvel ensemble à partir de plusieurs éléments.
  */
-set set_init_from(const int *values, size_t n);
+set set_copy_from(const int *values, size_t n);
 
 /**
- * Rajoute un nouvel élément à l'ensemble, renvoyant {@code 0} si l'élément est déjà présent.
+ * Rajoute un nouvel élément à l'ensemble, renvoyant `0` si l'élément est déjà présent.
  */
 int set_push(set *s, int val);
 
@@ -49,12 +49,17 @@ int set_push(set *s, int val);
 set set_union(set rhs, set lhs);
 
 /**
- * Renvoie {@code 1} si et seulement si les deux ensembles sont disjoints.
+ * Renvoie `1` si les deux ensembles sont disjoints, sinon renvoie `0`.
  */
 int set_are_disjoints(set rhs, set lhs);
 
 /**
- * Réserve de la place pour au moins {@code n} nouveaux éléments.
+ * Renvoie `1` si les deux ensembles se croisent, sinon renvoie `0`.
+ */
+int set_are_intersecting(set rhs, set lhs);
+
+/**
+ * Réserve de la place pour au moins `n` nouveaux éléments.
  */
 void set_reserve(set *s, size_t n);
 
@@ -64,10 +69,13 @@ void set_reserve(set *s, size_t n);
 void set_clear(set *s);
 
 /**
+ * Affiche l'ensemble dans la sortie standard.
+ */
+void set_print(set s);
+
+/**
  * Libère l'espace mémoire occupé par cet ensemble.
  */
 void set_free(set *s);
-
-void set_print(set s);
 
 #endif // SET_H

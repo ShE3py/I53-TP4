@@ -6,7 +6,10 @@
 
 #include "util/misc.h"
 
-set set_init() {
+/**
+ * Créer un nouvel ensemble vide.
+ */
+set set_new_empty() {
 	set s;
 	s.buf = NULL;
 	s.len = 0;
@@ -15,7 +18,11 @@ set set_init() {
 	return s;
 }
 
-set set_init_singleton(int val) {
+
+/**
+ * Créer un nouvel ensemble avec un seul élément.
+ */
+set set_new_singleton(int val) {
 	set s;
 	s.buf = checked_malloc(1 * sizeof(int));
 	s.buf[0] = val;
@@ -25,12 +32,16 @@ set set_init_singleton(int val) {
 	return s;
 }
 
-set set_init_from(const int *values, size_t n) {
+
+/**
+ * Créer un nouvel ensemble à partir de plusieurs éléments.
+ */
+set set_copy_from(const int *values, size_t n) {
 	if(n == 0) {
-		return set_init();
+		return set_new_empty();
 	}
 	
-	set s = set_init_singleton(values[0]);
+	set s = set_new_singleton(values[0]);
 	set_reserve(&s, n - 1);
 	
 	for(size_t i = 1; i < n; ++i) {
@@ -40,6 +51,10 @@ set set_init_from(const int *values, size_t n) {
 	return s;
 }
 
+
+/**
+ * Rajoute un nouvel élément à l'ensemble, renvoyant `0` si l'élément est déjà présent.
+ */
 int set_push(set *s, int val) {
 	// binary search
 	size_t i = 0;
@@ -85,10 +100,14 @@ int set_push(set *s, int val) {
 	return 1;
 }
 
+
+/**
+ * Calcul l'union de deux ensembles.
+ */
 set set_union(set rhs, set lhs) {
 	size_t len = rhs.len + lhs.len;
 	if(len == 0) {
-		return set_init();
+		return set_new_empty();
 	}
 	
 	size_t capacity = len;
@@ -143,6 +162,10 @@ set set_union(set rhs, set lhs) {
 	return s;
 }
 
+
+/**
+ * Renvoie `1` si les deux ensembles sont disjoints, sinon renvoie `0`.
+ */
 int set_are_disjoints(set rhs, set lhs) {
 	if(rhs.len == 0 || lhs.len == 0) {
 		return 1;
@@ -183,6 +206,18 @@ int set_are_disjoints(set rhs, set lhs) {
 	}
 }
 
+
+/**
+ * Renvoie `1` si les deux ensembles se croisent, sinon renvoie `0`.
+ */
+int set_are_intersecting(set rhs, set lhs) {
+	return !set_are_disjoints(rhs, lhs);
+}
+
+
+/**
+ * Réserve de la place pour au moins `n` nouveaux éléments.
+ */
 void set_reserve(set *s, size_t n) {
 	if(n > 0) {
 		s->capacity += n;
@@ -196,10 +231,18 @@ void set_reserve(set *s, size_t n) {
 	}
 }
 
+
+/**
+ * Retire tous les éléments de l'ensemble sans libéré d'espace mémoire.
+ */
 void set_clear(set *s) {
 	s->len = 0;
 }
 
+
+/**
+ * Affiche l'ensemble dans la sortie standard.
+ */
 void set_print(set s) {
 	if(s.len == 0) {
 		printf("{}\n");
@@ -215,6 +258,10 @@ void set_print(set s) {
 	}
 }
 
+
+/**
+ * Libère l'espace mémoire occupé par cet ensemble.
+ */
 void set_free(set *s) {
 	free(s->buf);
 	s->buf = NULL;
