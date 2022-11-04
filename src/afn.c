@@ -425,6 +425,29 @@ int* rshift_all(const int *transitions, size_t offset) {
 
 
 /**
+ * Modifie la fonction de transition `delta` pour prendre en compte toutes les transitions de `A` et toutes les
+ * transitions de `B`, dont les états auront étés augmentés de respectivement `qA_offset` et `qB_offset`.
+ *
+ * SAFETY: Suppose sans vérifier que les deux automates ont le même alphabet.
+ */
+void afn_delta_union_assign(int ***delta, AFN A, int qA_offset, AFN B, int qB_offset) {
+	// Copie des transitions de `A`
+	for(int qA = 0; qA <= A->Q; ++qA) {
+		for(int s = 0; s < A->lenSigma; ++s) {
+			delta[qA + qA_offset][s] = rshift_all(A->delta[qA][s], qA_offset);
+		}
+	}
+	
+	// Copie des transitions de `B`
+	for(int qB = 0; qB <= B->Q; ++qB) {
+		for(int s = 0; s < A->lenSigma; ++s) {
+			delta[qB + qB_offset][s] = rshift_all(B->delta[qB][s], qB_offset);
+		}
+	}
+}
+
+
+/**
  * Construit et renvoie l'union de deux AFN.
  */
 AFN afn_union(AFN A, AFN B) {
@@ -441,19 +464,8 @@ AFN afn_union(AFN A, AFN B) {
 	const int qA_offset = 1;
 	const int qB_offset = A->Q + 2;
 	
-	// Copie des transitions de `A` vers les transitions de `U`
-	for(int qA = 0; qA <= A->Q; ++qA) {
-		for(int s = 0; s < A->lenSigma; ++s) {
-			U->delta[qA + qA_offset][s] = rshift_all(A->delta[qA][s], qA_offset);
-		}
-	}
-	
-	// Copie des transitions de `B` vers les transitions de `U`
-	for(int qB = 0; qB <= B->Q; ++qB) {
-		for(int s = 0; s < A->lenSigma; ++s) {
-			U->delta[qB + qB_offset][s] = rshift_all(B->delta[qB][s], qB_offset);
-		}
-	}
+	// Copie des transitions présentes dans `A` et `B`
+	afn_delta_union_assign(U->delta, A, qA_offset, B, qB_offset);
 	
 	// Ajout des ε-transitions de l'état initial `q0` de `U` vers les états initiaux de `A` et `B`
 	for(int i = 0; i < A->lenI; ++i) {
@@ -490,23 +502,14 @@ AFN afn_concat(AFN A, AFN B) {
 	const int qA_offset = 0;
 	const int qB_offset = A->Q + 1;
 	
+	// Décalage des nouveaux états finaux
 	int *F = rshift_all_sized(B->F, B->lenF, qB_offset);
 	
 	AFN C = afn_init(Q, A->lenI, A->I, B->lenF, F, Sigma);
-
-	// Copie des transitions de `A` vers les transitions de `C`
-	for(int qA = 0; qA <= A->Q; ++qA) {
-		for(int s = 0; s < A->lenSigma; ++s) {
-			C->delta[qA + qA_offset][s] = rshift_all(A->delta[qA][s], qA_offset);
-		}
-	}
+	free(F);
 	
-	// Copie des transitions de `B` vers les transitions de `C`
-	for(int qB = 0; qB <= B->Q; ++qB) {
-		for(int s = 0; s < A->lenSigma; ++s) {
-			C->delta[qB + qB_offset][s] = rshift_all(B->delta[qB][s], qB_offset);
-		}
-	}
+	// Copie des transitions présentes dans `A` et `B`
+	afn_delta_union_assign(C->delta, A, qA_offset, B, qB_offset);
 	
 	// Ajout des ε-transitions depuis les états finaux de `A` vers les états initiaux de `B`
 	for(int i = 0; i < A->lenF; ++i) {
@@ -515,7 +518,6 @@ AFN afn_concat(AFN A, AFN B) {
 		}
 	}
 	
-	free(F);
 	return C;
 }
 
