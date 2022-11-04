@@ -302,6 +302,15 @@ int afn_simuler(AFN A, const char *s) {
 	for(size_t i = 0; (c = s[i]) != '\0'; ++i) {
 		// vérification des caractères qui ne seront jamais acceptés par un AFN
 		if(c < ASCII_FIRST || c > ASCII_LAST || c == EPSILON) {
+			set_free(&R);
+			return 0;
+		}
+		
+		// vérification que le caractère soit bien dans l'alphabet de l'AF
+		int s = A->dico[c - ASCII_FIRST];
+		
+		if(s == -1) {
+			set_free(&R);
 			return 0;
 		}
 		
@@ -310,12 +319,6 @@ int afn_simuler(AFN A, const char *s) {
 		// d'où une variable temporaire
 		
 		set R_next = set_new_empty();
-		int s = A->dico[c - ASCII_FIRST];
-		
-		// vérification que le caractère soit bien dans l'alphabet de l'AF
-		if(s == -1) {
-			return 0;
-		}
 		
 		for(size_t j = 0; j < R.len; ++j) {
 			// pour toutes les transitions possibles en lisant `c` dans un état particulier de `R`,
@@ -323,17 +326,17 @@ int afn_simuler(AFN A, const char *s) {
 			
 			if(q2 != NULL) {
 				// on converti la liste des transitions possibles en un ensemble,
-				set s = set_new_empty();
+				set next = set_new_empty();
 				while(*q2 != INVALID_STATE) {
-					set_push(&s, *q2);
+					set_push(&next, *q2);
 					++q2;
 				}
 				
 				// et on ajoute les états accessibles dans `R_next`
-				set _union = set_union(R_next, s);
+				set _union = set_union(R_next, next);
 				
 				set_free(&R_next);
-				set_free(&s);
+				set_free(&next);
 				R_next = _union;
 			}
 		}

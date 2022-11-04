@@ -76,5 +76,11 @@ int main(int argc, char *argv[]) {
 	
 	// test visuel de l'union
 	print(AFN E = afn_union(A, B));
-	afn_dot(E, "sample1+2");
+	afn_dot(E, "sample2+1");
+	
+	afn_free(A);
+	afn_free(B);
+	afd_free(C);
+	afd_free(D);
+	afn_free(E);
 }
