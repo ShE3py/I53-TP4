@@ -78,9 +78,14 @@ int main(int argc, char *argv[]) {
 	print(AFN E = afn_union(A, B));
 	afn_dot(E, "sample2+1");
 	
+	// test visual de la concaténation
+	print(AFN F = afn_concat(A, B));
+	afn_dot(F, "sample2·1");
+	
 	afn_free(A);
 	afn_free(B);
 	afd_free(C);
 	afd_free(D);
 	afn_free(E);
+	afn_free(F);
 }

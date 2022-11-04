@@ -378,6 +378,31 @@ AFN afn_char(char c, const char *Sigma) {
  * Additionne un nombre à tous les éléments du tableau spécifié.
  *
  * Paramètres:
+ * - transitions: un tableau de transitions
+ * - len:       : le nombre de transitions
+ * - offset     : la valeur à ajouter à tous les éléments du tableau
+ *
+ * Renvoie: un nouveau tableau terminé par `INVALID_STATE` qu'il faudra désallouer avec `free()`.
+ */
+int* rshift_all_sized(const int *transitions, size_t len, size_t offset) {
+	if(transitions == NULL) {
+		return NULL;
+	}
+	
+	int *out = checked_malloc((len + 1) * sizeof(int));
+	for(size_t i = 0; i < len; ++i) {
+		out[i] = transitions[i] + offset;
+	}
+	
+	out[len] = INVALID_STATE;
+	return out;
+}
+
+
+/**
+ * Additionne un nombre à tous les éléments du tableau spécifié.
+ *
+ * Paramètres:
  * - transitions: un tableau de transitions terminé par `INVALID_STATE`.
  * - offset     : la valeur à ajouter à tous les éléments du tableau
  *
@@ -395,13 +420,7 @@ int* rshift_all(const int *transitions, size_t offset) {
 		++ptr;
 	}
 	
-	int *out = checked_malloc((len + 1) * sizeof(int));
-	for(size_t i = 0; i < len; ++i) {
-		out[i] = transitions[i] + offset;
-	}
-	
-	out[len] = INVALID_STATE;
-	return out;
+	return rshift_all_sized(transitions, len, offset);
 }
 
 
@@ -411,7 +430,7 @@ int* rshift_all(const int *transitions, size_t offset) {
 AFN afn_union(AFN A, AFN B) {
 	check_param("A->Sigma equals B->Sigma", strcmp(A->Sigma, B->Sigma) == 0);
 	
-	const int Q = A->Q + B->Q + 2;
+	const int Q = A->Q + B->Q + 3;
 	const int q0 = 0;
 	const int qQ = Q;
 	const char *Sigma = A->Sigma;
@@ -455,6 +474,49 @@ AFN afn_union(AFN A, AFN B) {
 	}
 	
 	return U;
+}
+
+
+/**
+ * Construit et renvoie la concaténation de deux AFN.
+ */
+AFN afn_concat(AFN A, AFN B) {
+	check_param("A->Sigma equals B->Sigma", strcmp(A->Sigma, B->Sigma) == 0);
+	
+	const int Q = A->Q + B->Q + 1;
+	const char *Sigma = A->Sigma;
+	
+	// Aucun décalage pour les états de `A`, un décalage pour ceux de `B` dans la concaténation `C`
+	const int qA_offset = 0;
+	const int qB_offset = A->Q + 1;
+	
+	int *F = rshift_all_sized(B->F, B->lenF, qB_offset);
+	
+	AFN C = afn_init(Q, A->lenI, A->I, B->lenF, F, Sigma);
+
+	// Copie des transitions de `A` vers les transitions de `C`
+	for(int qA = 0; qA <= A->Q; ++qA) {
+		for(int s = 0; s < A->lenSigma; ++s) {
+			C->delta[qA + qA_offset][s] = rshift_all(A->delta[qA][s], qA_offset);
+		}
+	}
+	
+	// Copie des transitions de `B` vers les transitions de `C`
+	for(int qB = 0; qB <= B->Q; ++qB) {
+		for(int s = 0; s < A->lenSigma; ++s) {
+			C->delta[qB + qB_offset][s] = rshift_all(B->delta[qB][s], qB_offset);
+		}
+	}
+	
+	// Ajout des ε-transitions depuis les états finaux de `A` vers les états initiaux de `B`
+	for(int i = 0; i < A->lenF; ++i) {
+		for(int j = 0; j < B->lenI; ++j) {
+			afn_ajouter_transition(C, A->F[i] + qA_offset, EPSILON, B->I[j] + qB_offset);
+		}
+	}
+	
+	free(F);
+	return C;
 }
 
 

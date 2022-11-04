@@ -149,6 +149,11 @@ AFN afn_union(AFN A, AFN B);
 
 
 /**
+ * Construit et renvoie la concaténation de deux AFN.
+ */
+AFN afn_concat(AFN A, AFN B);
+
+/**
  * Affiche l'AFN spécifié dans le flux de sortie standard.
  */
 void afn_print(AFN A);
