@@ -10,7 +10,7 @@ LFLAGS = -lm
 
 mkdirs = $(OUT)/grass
 
-all: $(mkdirs) test.exe mygrep
+all: $(mkdirs) test.exe mydot mygrep
 
 $(mkdirs):
 	mkdir -p $(OUT)/util/
@@ -18,6 +18,9 @@ $(mkdirs):
 	touch $@
 
 test.exe: $(addprefix $(OUT)/,$(OBJS) test.o)
+	$(CC) $^ $(CFLAGS) -o $@ $(LFLAGS)
+
+mydot: $(addprefix $(OUT)/,$(OBJS) mydot.o)
 	$(CC) $^ $(CFLAGS) -o $@ $(LFLAGS)
 
 mygrep: $(addprefix $(OUT)/,$(OBJS) mygrep.o)
@@ -31,4 +34,4 @@ $(OUT)/%.o: $(SRC)/%.c
 
 clean:
 	rm -rf $(OUT)
-	rm -f *.exe mygrep
+	rm -f *.exe mydot mygrep
