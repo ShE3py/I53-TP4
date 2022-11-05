@@ -634,7 +634,7 @@ void afn_dot(AFN A, const char *path) {
 		"\tlayout = dot\n"
 		"\trankdir = LR\n"
 		"\t\n"
-		"\tnode [shape=circle]\n"
+		"\tnode [shape=circle, fixedsize=true]\n"
 		"\tedge [arrowhead=open]\n"
 		"\t\n"
 	);
