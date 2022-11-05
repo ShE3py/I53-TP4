@@ -98,6 +98,7 @@ int main(int argc, char *argv[]) {
 	
 	AFN H = afn_char('a', "a");
 	afn_print(H);
+	afn_dot(H, "a");
 	
 	afn_free(H);
 	

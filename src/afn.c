@@ -518,7 +518,7 @@ AFN afn_concat(AFN A, AFN B) {
  * Construit et renvoie l'étoile de Klenne d'un AFN.
  */
 AFN afn_kleene(AFN A) {
-	const int Q = A->Q + 3;
+	const int Q = A->Q + 2;
 	const int q0 = 0;
 	const int qQ = Q;
 	
