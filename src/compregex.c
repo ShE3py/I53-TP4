@@ -111,10 +111,17 @@ void print_lexemes(const Lexeme *lexemes, size_t n) {
  */
 Lexeme* analyse_lexicale(const char *s, size_t *outLen) {
 	if(s == NULL) {
+		*outLen = 0;
 		return NULL;
 	}
 	
 	const size_t len = strlen(s);
+	if(len == 0) {
+		*outLen = 0;
+		return NULL;
+	}
+	
+	// chaque caractère produit au maximum un lexème
 	Lexeme *lexemes = checked_malloc(len * sizeof(Lexeme));
 	
 	size_t i = 0;
@@ -173,6 +180,7 @@ PRIMITIVE(KleeneVal);
  */
 static const char *SIGMA = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
+
 /**
  * Transforme un flux d'unités lexicales en un AFN.
  */
@@ -189,7 +197,7 @@ AFN analyse_syntaxique(Lexeme *lexemes, size_t n, const char *s) {
 	}
 	
 	AFN A = vstack_pop(&stack);
-	vstack_free(&stack);
+	vstack_free(&stack); // affiche un warning si jamais la pile n'est pas vide
 	
 	return A;
 }
