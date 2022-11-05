@@ -118,6 +118,7 @@ Lexeme* analyse_lexicale(const char *s, size_t *outLen) {
 	Lexeme *lexemes = checked_malloc(len * sizeof(Lexeme));
 	
 	size_t i = 0;
+	const char *str = s;
 	
 	while(*s != '\0') {
 		if(isalnum(*s)) {
@@ -139,7 +140,7 @@ Lexeme* analyse_lexicale(const char *s, size_t *outLen) {
 			++i;
 		}
 		else if(!isspace(*s)) {
-			eprintln(s, i, 1);
+			eprintln(str, i, 1);
 			fprintf(stderr, "erreur lexicale: lexème inconnu: '%c'\n", *s);
 			exit(1);
 		}
@@ -198,10 +199,34 @@ AFN analyse_syntaxique(Lexeme *lexemes, size_t n, const char *s) {
  * Définition des primitives
  */
 
+/**
+ * Appel d'une primitive avec les paramètres de la primitive courante.
+ */
 #define INVOKE(p) p (lexemes, n, i, stack, s)
+
+/**
+ * Renvoie le caractère du lexème en cours de traitement.
+ */
 #define PEEK() lexemes[*i].token.value
+
+/**
+ * Renvoie `1` s'il y a un lexème courant et si la valeur de ce lexème est égale à `c`, sinon renvoie `0`.
+ */
 #define PEEK_EQ(c) (*i < n && PEEK() == c)
+
+/**
+ * Renvoie `1` s'il y a un lexème courant et que celui-ci représente un `Character`.
+ */
 #define PEEK_IS_CHAR() (*i < n && lexemes[*i].token.kind == Character)
+
+/**
+ * Renvoie `1` s'il y a un lexème courant et que celui-ci peut représenter une concaténation implicite avec le lexème précédent.
+ */
+#define PEEK_IS_IMPLICIT_CONCAT() (*i < n && (lexemes[*i].token.kind == Character || lexemes[*i].token.value == '('))
+
+/**
+ * Déplace le pointeur du lexème courant à `n` lexèmes plus loin.
+ */
 #define SEEK(n) (*i) += n
 
 PRIMITIVE(Expr) {
@@ -234,8 +259,14 @@ PRIMITIVE(UnionVal) {
 }
 
 PRIMITIVE(ConcatOp) {
-	if(PEEK_EQ('.')) {
-		SEEK(1);
+	int implicit = 0;
+	
+	if(PEEK_EQ('.') || (implicit = PEEK_IS_IMPLICIT_CONCAT())) {
+		if(!implicit) {
+			// skip explicit concat op
+			SEEK(1);
+		}
+		
 		INVOKE(ConcatVal);
 		
 		AFN rhs = vstack_pop(stack);
