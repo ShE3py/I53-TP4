@@ -425,23 +425,13 @@ int* rshift_all(const int *transitions, size_t offset) {
 
 
 /**
- * Modifie la fonction de transition `delta` pour prendre en compte toutes les transitions de `A` et toutes les
- * transitions de `B`, dont les états auront étés augmentés de respectivement `qA_offset` et `qB_offset`.
- *
- * SAFETY: Suppose sans vérifier que les deux automates ont le même alphabet.
+ * Modifie la fonction de transition `delta` pour prendre en compte toutes les transitions de `A` dont
+ * les états auront étés augmentés de `qA_offset`.
  */
-void afn_delta_union_assign(int ***delta, AFN A, int qA_offset, AFN B, int qB_offset) {
-	// Copie des transitions de `A`
+void afn_delta_copy_assign(int ***delta, AFN A, int qA_offset) {
 	for(int qA = 0; qA <= A->Q; ++qA) {
 		for(int s = 0; s < A->lenSigma; ++s) {
 			delta[qA + qA_offset][s] = rshift_all(A->delta[qA][s], qA_offset);
-		}
-	}
-	
-	// Copie des transitions de `B`
-	for(int qB = 0; qB <= B->Q; ++qB) {
-		for(int s = 0; s < A->lenSigma; ++s) {
-			delta[qB + qB_offset][s] = rshift_all(B->delta[qB][s], qB_offset);
 		}
 	}
 }
@@ -465,7 +455,8 @@ AFN afn_union(AFN A, AFN B) {
 	const int qB_offset = A->Q + 2;
 	
 	// Copie des transitions présentes dans `A` et `B`
-	afn_delta_union_assign(U->delta, A, qA_offset, B, qB_offset);
+	afn_delta_copy_assign(U->delta, A, qA_offset);
+	afn_delta_copy_assign(U->delta, B, qB_offset);
 	
 	// Ajout des ε-transitions de l'état initial `q0` de `U` vers les états initiaux de `A` et `B`
 	for(int i = 0; i < A->lenI; ++i) {
@@ -509,7 +500,8 @@ AFN afn_concat(AFN A, AFN B) {
 	free(F);
 	
 	// Copie des transitions présentes dans `A` et `B`
-	afn_delta_union_assign(C->delta, A, qA_offset, B, qB_offset);
+	afn_delta_copy_assign(C->delta, A, qA_offset);
+	afn_delta_copy_assign(C->delta, B, qB_offset);
 	
 	// Ajout des ε-transitions depuis les états finaux de `A` vers les états initiaux de `B`
 	for(int i = 0; i < A->lenF; ++i) {
@@ -519,6 +511,47 @@ AFN afn_concat(AFN A, AFN B) {
 	}
 	
 	return C;
+}
+
+
+/**
+ * Construit et renvoie l'étoile de Klenne d'un AFN.
+ */
+AFN afn_kleene(AFN A) {
+	const int Q = A->Q + 3;
+	const int q0 = 0;
+	const int qQ = Q;
+	
+	AFN K = afn_init(Q, 1, &q0, 1, &qQ, A->Sigma);
+	
+	// Décalage des états de `A` dans `K`
+	const int qA_offset = 1;
+	
+	// Copie des transitions de `A`
+	afn_delta_copy_assign(K->delta, A, qA_offset);
+	
+	// Ajout des ε-transitions depuis `q0` vers les états initiaux de `A`
+	for(int i = 0; i < A->lenI; ++i) {
+		afn_ajouter_transition(K, q0, EPSILON, A->I[i] + qA_offset);
+	}
+	
+	// Ajout des ε-transitions depuis les états finaux de `A` vers `qQ`
+	for(int i = 0; i < A->lenF; ++i) {
+		afn_ajouter_transition(K, A->F[i] + qA_offset, EPSILON, qQ);
+	}
+	
+	// Ajout des ε-transitions depuis les états finaux de `A` vers ses états initiaux
+	// (répétabilité)
+	for(int i = 0; i < A->lenF; ++i) {
+		for(int j = 0; j < A->lenI; ++j) {
+			afn_ajouter_transition(K, A->F[i] + qA_offset, EPSILON, A->I[j] + qA_offset);
+		}
+	}
+	
+	// Ajout de l'ε-transition depuis `q0` vers `qQ` (optionnalité)
+	afn_ajouter_transition(K, q0, EPSILON, qQ);
+	
+	return K;
 }
 
 

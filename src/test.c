@@ -76,11 +76,15 @@ int main(int argc, char *argv[]) {
 	
 	// test visuel de l'union
 	print(AFN E = afn_union(A, B));
-	afn_dot(E, "sample2+1");
+	afn_dot(E, "sample12_union");
 	
-	// test visual de la concaténation
+	// test visuel de la concaténation
 	print(AFN F = afn_concat(A, B));
-	afn_dot(F, "sample2·1");
+	afn_dot(F, "sample12_concat");
+	
+	// test visuel de l'étoile de Klenne
+	print(AFN G = afn_kleene(A));
+	afn_dot(G, "sample1_kleene");
 	
 	afn_free(A);
 	afn_free(B);
@@ -88,4 +92,5 @@ int main(int argc, char *argv[]) {
 	afd_free(D);
 	afn_free(E);
 	afn_free(F);
+	afn_free(G);
 }

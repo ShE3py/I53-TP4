@@ -153,6 +153,13 @@ AFN afn_union(AFN A, AFN B);
  */
 AFN afn_concat(AFN A, AFN B);
 
+
+/**
+ * Construit et renvoie l'étoile de Klenne d'un AFN.
+ */
+AFN afn_kleene(AFN A);
+
+
 /**
  * Affiche l'AFN spécifié dans le flux de sortie standard.
  */
