@@ -2,6 +2,7 @@
 
 #include "afd.h"
 #include "afn.h"
+#include "compregex.h"
 
 #define print(expr)  \
 printf(#expr ";\n"); \
@@ -93,4 +94,9 @@ int main(int argc, char *argv[]) {
 	afn_free(E);
 	afn_free(F);
 	afn_free(G);
+	printf("\n");
+	
+	// test visual d'une ER
+	print(AFN regex = compile("((a.b)+c)*"));
+	
 }

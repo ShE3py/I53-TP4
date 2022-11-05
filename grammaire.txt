@@ -1,0 +1,7 @@
+Expr      → UnionVal UnionOp
+UnionOp   → + UnionVal UnionOp | ε
+UnionVal  → ConcatVal ConcatOp
+ConcatOp  → . ConcatVal ConcatOp | ε
+ConcatVal → KleeneVal KleeneOp
+KleeneOp  → * KleeneOp | ε
+KleeneVal → Symbole | (Expr)
