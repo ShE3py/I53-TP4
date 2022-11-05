@@ -13,10 +13,10 @@ int main(int argc, char *argv[]) {
 	afn_dot(A, "grep");
 	
 	if(afn_simuler(A, argv[2])) {
-		printf("'%s' est acceptée\n", argv[2]);
+		printf("\"%s\" est acceptée\n", argv[2]);
 	}
 	else {
-		printf("'%s' est rejetée\n", argv[2]);
+		printf("\"%s\" est rejetée\n", argv[2]);
 	}
 	
 	afn_free(A);

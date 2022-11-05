@@ -14,6 +14,7 @@ all: $(mkdirs) test.exe mygrep
 
 $(mkdirs):
 	mkdir -p $(OUT)/util/
+	mkdir -p $(OUT)/png/
 	touch $@
 
 test.exe: $(addprefix $(OUT)/,$(OBJS) test.o)

@@ -624,9 +624,10 @@ void afn_print(AFN A) {
  * Dessine un AFN dans un fichier `filename.png`.
  */
 void afn_dot(AFN A, const char *path) {
-	char *tmp = concat("out/", path);
-	char *out = concat(tmp, ".gv");
+	char *dir = concat("out/", path);
+	char *out = concat(dir, ".gv");
 	
+	free(dir);
 	FILE *f = fopen(out, "w");
 	
 	fprintf(f,
@@ -681,12 +682,13 @@ void afn_dot(AFN A, const char *path) {
 	fclose(f);
 	
 	char *in = out;
+	dir = concat("out/png/", path);
 	
-	out = concat(tmp, ".png");
-	free(tmp);
+	out = concat(dir, ".png");
+	free(dir);
 	
 	char command[128];
-	snprintf(command, 128, "dot -Tpng %s -o %s", in, out);
+	snprintf(command, 128, "dot -Tpng '%s' -o '%s'", in, out);
 	
 	int retcode = system(command);
 	if(retcode != 0) {

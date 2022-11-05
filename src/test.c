@@ -24,7 +24,7 @@ else {\
 int main(int argc, char *argv[]) {
 	// `sample1.afn`: accepte toutes les chaînes d'au moins un caractère contenant uniquement des `a` ou uniquement des `b`.
 	print(AFN A = afn_finit("sample1.afn"));
-	afn_dot(A, "sample1");
+	print(afn_dot(A, "A"));
 	
 	assert_rejected(A, "");
 	assert_accepted(A, "a");
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 	
 	// `sample2.afn`: accepte toutes les chaînes dans `ab` si les ε-transitions sont bien suivies.
 	print(AFN B = afn_finit("sample2.afn"));
-	afn_dot(B, "sample2");
+	print(afn_dot(B, "B"));
 	
 	assert_accepted(B, "");
 	assert_accepted(B, "a");
@@ -77,15 +77,18 @@ int main(int argc, char *argv[]) {
 	
 	// test visuel de l'union
 	print(AFN E = afn_union(A, B));
-	afn_dot(E, "sample12_union");
+	print(afn_dot(E, "E"));
+	printf("\n");
 	
 	// test visuel de la concaténation
 	print(AFN F = afn_concat(A, B));
-	afn_dot(F, "sample12_concat");
+	print(afn_dot(F, "F"));
+	printf("\n");
 	
 	// test visuel de l'étoile de Klenne
 	print(AFN G = afn_kleene(A));
-	afn_dot(G, "sample1_kleene");
+	print(afn_dot(G, "G"));
+	printf("\n");
 	
 	afn_free(A);
 	afn_free(B);
@@ -94,13 +97,6 @@ int main(int argc, char *argv[]) {
 	afn_free(E);
 	afn_free(F);
 	afn_free(G);
-	printf("\n");
-	
-	AFN H = afn_char('a', "a");
-	afn_print(H);
-	afn_dot(H, "a");
-	
-	afn_free(H);
 	
 	// test visual d'une ER
 	//print(AFN regex = compile("((a.b)+c)*"));
