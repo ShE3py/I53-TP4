@@ -2,7 +2,7 @@ SHELL = /bin/bash
 CC = gcc
 
 SRC = src
-OBJS = af.o afd.o afn.o compregex.o util/misc.o util/stack.o util/set.o
+OBJS = af.o afd.o afn.o compregex.o util/misc.o util/stack.o util/set.o util/vstack.o
 OUT = out
 
 CFLAGS = -Wall -g -I$(SRC)
@@ -30,4 +30,4 @@ $(OUT)/%.o: $(SRC)/%.c
 
 clean:
 	rm -rf $(OUT)
-	rm -f *.exe
+	rm -f *.exe mygrep

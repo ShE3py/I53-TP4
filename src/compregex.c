@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "util/vstack.h"
 #include "util/misc.h"
 
 /**
@@ -155,11 +156,7 @@ Lexeme* analyse_lexicale(const char *s, size_t *outLen) {
  * Déclarations des primitives
  */
 
-#define PRIMITIVE(p) void p (Lexeme *lexemes, size_t n, size_t *i, AFN *A, const char *s)
-#define INVOKE(p) p (lexemes, n, i, A, s)
-#define PEEK_EQ(c) (*i < n && lexemes[*i].token.value == c)
-#define PEEK_IS_CHAR (*i < n && lexemes[*i].token.kind == Character)
-#define SEEK(n) (*i) += n
+#define PRIMITIVE(p) void p (Lexeme *lexemes, size_t n, size_t *i, vstack *stack, const char *s)
 
 PRIMITIVE(Expr);
 PRIMITIVE(UnionOp);
@@ -171,14 +168,18 @@ PRIMITIVE(KleeneVal);
 
 
 /**
+ * Définition de l'alphabet
+ */
+static const char *SIGMA = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+/**
  * Transforme un flux d'unités lexicales en un AFN.
  */
 AFN analyse_syntaxique(Lexeme *lexemes, size_t n, const char *s) {
-	const int q = 0;
-	AFN A = afn_init(q, 1, &q, 1, &q, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+	vstack stack = vstack_new();
 	
 	size_t i = 0;
-	Expr(lexemes, n, &i, &A, s);
+	Expr(lexemes, n, &i, &stack, s);
 	
 	if(i < n) {
 		eprintln(s, i, n - i);
@@ -186,9 +187,22 @@ AFN analyse_syntaxique(Lexeme *lexemes, size_t n, const char *s) {
 		exit(1);
 	}
 	
+	AFN A = vstack_pop(&stack);
+	vstack_free(&stack);
+	
 	return A;
 }
 
+
+/**
+ * Définition des primitives
+ */
+
+#define INVOKE(p) p (lexemes, n, i, stack, s)
+#define PEEK() lexemes[*i].token.value
+#define PEEK_EQ(c) (*i < n && PEEK() == c)
+#define PEEK_IS_CHAR() (*i < n && lexemes[*i].token.kind == Character)
+#define SEEK(n) (*i) += n
 
 PRIMITIVE(Expr) {
 	INVOKE(UnionVal);
@@ -199,6 +213,17 @@ PRIMITIVE(UnionOp) {
 	if(PEEK_EQ('+')) {
 		SEEK(1);
 		INVOKE(UnionVal);
+		
+		AFN rhs = vstack_pop(stack);
+		AFN lhs = vstack_pop(stack);
+		
+		AFN U = afn_union(lhs, rhs);
+		
+		afn_free(rhs);
+		afn_free(lhs);
+		
+		vstack_push(stack, U);
+		
 		INVOKE(UnionOp);
 	}
 }
@@ -212,6 +237,17 @@ PRIMITIVE(ConcatOp) {
 	if(PEEK_EQ('.')) {
 		SEEK(1);
 		INVOKE(ConcatVal);
+		
+		AFN rhs = vstack_pop(stack);
+		AFN lhs = vstack_pop(stack);
+		
+		AFN C = afn_concat(lhs, rhs);
+		
+		afn_free(rhs);
+		afn_free(lhs);
+		
+		vstack_push(stack, C);
+		
 		INVOKE(ConcatOp);
 	}
 }
@@ -224,6 +260,13 @@ PRIMITIVE(ConcatVal) {
 PRIMITIVE(KleeneOp) {
 	while(PEEK_EQ('*')) {
 		SEEK(1);
+		
+		AFN hs = vstack_pop(stack);
+		AFN K = afn_kleene(hs);
+		
+		afn_free(hs);
+		
+		vstack_push(stack, K);
 	}
 }
 
@@ -241,7 +284,12 @@ PRIMITIVE(KleeneVal) {
 		SEEK(1);
 	}
 	else {
-		if(PEEK_IS_CHAR) {
+		if(PEEK_IS_CHAR()) {
+			char c = PEEK();
+			AFN A = afn_char(c, SIGMA);
+			
+			vstack_push(stack, A);
+			
 			SEEK(1);
 		}
 		else {

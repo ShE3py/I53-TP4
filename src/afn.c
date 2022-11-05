@@ -595,7 +595,7 @@ void afn_print(AFN A) {
   printf("\n");
   printf("%s\n",line);
 
-  char *buffer = malloc(sizeof(char)*(total_cell_size+1));
+  char *buffer = malloc(sizeof(char)*(total_cell_size+2));
   for (int q=0; q<A->Q+1; q++){
     printf("|%*d |", padding+5, q);
     for (int i=0; i<A->lenSigma; i++){

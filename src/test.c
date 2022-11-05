@@ -96,7 +96,12 @@ int main(int argc, char *argv[]) {
 	afn_free(G);
 	printf("\n");
 	
+	AFN H = afn_char('a', "a");
+	afn_print(H);
+	
+	afn_free(H);
+	
 	// test visual d'une ER
-	print(AFN regex = compile("((a.b)+c)*"));
+	//print(AFN regex = compile("((a.b)+c)*"));
 	
 }
