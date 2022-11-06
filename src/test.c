@@ -10,12 +10,12 @@ expr
 
 #define SIMUL_FUNC afn_simuler
 
-#define assert_simul(A, s, v, _what) \
-if(SIMUL_FUNC (A, s) != v) { \
-	fprintf(stderr, "assert failed: \"" s "\" is not " _what " by " #A "\n"); \
-} \
-else {\
-	printf("assert ok: \"" s "\" is " _what " by " #A "\n"); \
+#define assert_simul(A, s, v, _what)                                           \
+if(SIMUL_FUNC (A, s) != v) {                                                   \
+	fprintf(stderr, "assert failed: \"" s "\" is not " _what " by " #A "\n");  \
+}                                                                              \
+else {                                                                         \
+	printf("assert ok: \"" s "\" is " _what " by " #A "\n");                   \
 }
 
 #define assert_accepted(A, s) assert_simul(A, s, 1, "accepted")
@@ -90,6 +90,17 @@ int main(int argc, char *argv[]) {
 	print(afn_dot(G, "G"));
 	printf("\n");
 	
+	// test d'une ER
+	print(AFN H = compile("(a+b)(a+c).b*"));
+	print(afn_dot(H, "H"));
+	
+#undef SIMUL_FUNC
+#define SIMUL_FUNC afn_simuler
+	assert_accepted(H, "acbbbbb");
+	assert_rejected(H, "bbbbbb");
+	assert_accepted(H, "ba");
+	assert_accepted(H, "aab");
+	
 	afn_free(A);
 	afn_free(B);
 	afd_free(C);
@@ -97,8 +108,5 @@ int main(int argc, char *argv[]) {
 	afn_free(E);
 	afn_free(F);
 	afn_free(G);
-	
-	// test visual d'une ER
-	//print(AFN regex = compile("((a.b)+c)*"));
-	
+	afn_free(H);
 }
