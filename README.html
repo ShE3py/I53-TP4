@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+ <head> 
+  <title>README.html</title>               
+  <style>/* Reworked by IntelliJ Team The MIT License (MIT) Copyright (c) JetBrains Adapted from https://github.com/sindresorhus/github-markdown-css The MIT License (MIT) Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com&gt; (sindresorhus.com) Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */ @font-face { font-family: octicons-anchor; src: url(data:font/woff;charset=utf-8;base64,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) format('woff'); } body { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; font-family: Helvetica, Arial, freesans, sans-serif; font-size: 14px; line-height: 1.6; word-wrap: break-word; margin: 0 2em; } strong { font-weight: bold; } img { border: 0; } input { color: inherit; font: inherit; margin: 0; line-height: normal; } html input[disabled] { cursor: default; } input[type="checkbox"] { box-sizing: border-box; padding: 0; } body * { box-sizing: border-box; } input { font: 13px/1.4 Helvetica, arial, nimbussansl, liberationsans, freesans, clean, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; } a { text-decoration: none; } a:hover, a:active { text-decoration: underline; } hr { height: 1px; padding: 0; margin: 20px 0; border: 0 none; } hr:before { display: table; content: ""; } hr:after { display: table; clear: both; content: ""; } blockquote { margin: 0; } ul, ol { padding: 0; margin-top: 0; margin-bottom: 0; } ol ol, ul ol { list-style-type: lower-roman; } ul ul ol, ul ol ol, ol ul ol, ol ol ol { list-style-type: lower-alpha; } dd { margin-left: 0; } .octicon { font: normal normal normal 16px/1 octicons-anchor; display: inline-block; text-decoration: none; text-rendering: auto; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; } .octicon-link:before { content: '\f05c'; } .markdown-body &gt; *:first-child { margin-top: 0 !important; } .markdown-body &gt; *:last-child { margin-bottom: 0 !important; } .anchor { position: absolute; top: 0; left: 0; display: block; padding-right: 6px; padding-left: 30px; margin-left: -30px; } .anchor:focus { outline: none; } h1, h2, h3, h4, h5, h6 { position: relative; margin-top: 1em; margin-bottom: 16px; font-weight: bold; line-height: 1.4; } h1 .octicon-link, h2 .octicon-link, h3 .octicon-link, h4 .octicon-link, h5 .octicon-link, h6 .octicon-link { display: none; color: #000; vertical-align: middle; } h1:hover .anchor, h2:hover .anchor, h3:hover .anchor, h4:hover .anchor, h5:hover .anchor, h6:hover .anchor { padding-left: 8px; margin-left: -30px; text-decoration: none; } h1:hover .anchor .octicon-link, h2:hover .anchor .octicon-link, h3:hover .anchor .octicon-link, h4:hover .anchor .octicon-link, h5:hover .anchor .octicon-link, h6:hover .anchor .octicon-link { display: inline-block; } h1 { font-size: 2.2em; padding-top: 0.6em; } h1 .anchor { line-height: 1; } h2 { font-size: 1.8em; line-height: 1.2; padding-top: 0.6em; } h2 .anchor { line-height: 1.2; } h3 { font-size: 1.3em; line-height: 1; padding-top: 0.6em; } h3 .anchor { line-height: 1.2; } h4 { font-size: 1em; } h4 .anchor { line-height: 1.2; } h5 { font-size: 1em; } h5 .anchor { line-height: 1.1; } h6 { font-size: 1em; } h6 .anchor { line-height: 1.1; } p, blockquote, ul, ol, dl, table, pre { margin-top: 16px; margin-bottom: 16px; } ul, ol { padding-left: 2em; } ul ul, ul ol, ol ol, ol ul { margin-top: 0; margin-bottom: 0; } li &gt; p { margin-top: 0; margin-bottom: 0; } dl { padding: 0; } dl dt { padding: 0; margin-top: 16px; font-size: 1em; font-style: italic; font-weight: bold; } dl dd { padding: 0 16px; margin-bottom: 16px; } blockquote { padding: 10px 10px 10px 16px; border-left: 2px solid; border-radius: 0 3px 3px 0; } blockquote &gt; :first-child { margin-top: 0; } blockquote &gt; :last-child { margin-bottom: 0; } table { display: block; width: 100%; overflow: auto; word-break: normal; border-collapse: collapse; border-spacing: 0; font-size: 1em; } table th { font-weight: bold; } table th, table td { padding: 6px 13px; background: transparent; } table tr { border-top: 1px solid; } img { max-width: 100%; box-sizing: border-box; } code { font: 0.9em "JetBrains Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace; padding: 0.2em 0.4em; margin: 2px; border-radius: 3px; } pre &gt; code { padding: 0; margin: 0; font-size: 100%; word-break: normal; white-space: pre; background: transparent; border: 0; } .highlight { margin-bottom: 16px; } .highlight pre, pre { /*! font: 0.85em "JetBrains Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace; */ padding: 16px; overflow: auto; line-height: 1.45; border-radius: 3px; } pre code { display: inline; max-width: initial; padding: 0; margin: 0; overflow: initial; line-height: inherit; word-wrap: normal; background-color: transparent; border: 0; } pre code:before, pre code:after { content: normal; } kbd { font: 0.9em "JetBrains Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace; padding: 0.2em 0.4em; margin: 2px; border-radius: 3px; } .task-list-item { list-style-type: none; } .task-list-item + .task-list-item { margin-top: 3px; } .task-list-item input { margin: 0 0.35em 0.25em -0.6em; vertical-align: middle; } :checked + .radio-label { z-index: 1; position: relative; } span.user-del { text-decoration: line-through; } ::-webkit-scrollbar { width: 6px; height: 6px; } ::-webkit-scrollbar-thumb { -webkit-border-radius: 10px; } ::-webkit-scrollbar-track:vertical { -webkit-box-shadow: -1px 0 0 #ededed; } ::-webkit-scrollbar-track { background-color: transparent; } ::-webkit-scrollbar { width: 6px; } </style>
+  <style>body { background-color: rgba(46, 52, 64, 255.0); font-size: 13px !important; } body, p, blockquote, ul, ol, dl, table, pre, code, tr { color: rgba(216, 222, 233, 255.0); } a { color: rgba(136, 192, 208, 255.0); } table td, table th { border: 1px solid rgba(76, 86, 106, 255.0); } hr { background-color: rgba(76, 86, 106, 255.0); } kbd, tr { border: 1px solid rgba(76, 86, 106, 255.0); } h6 { color: rgba(136, 192, 208, 255.0); } blockquote { border-left: 2px solid rgba(136, 192, 208, 0.4); } ::-webkit-scrollbar-thumb { background-color: rgba(166, 166, 166, 0.2784313725490196); } blockquote, code, pre { background-color: rgba(212, 222, 231, 0.09803921568627451); }</style>
+  <style>/* Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file. */ .code-fence-highlighter-copy-button { display: flex; position: absolute; float: left; margin-left: -1em; margin-top: -1em; } .code-fence-highlighter-copy-button-icon { max-width: 1em; } .code-fence:hover .code-fence-highlighter-copy-button-icon { /*noinspection CssUnknownTarget*/ content: url("copy-button-copy-icon.png"); } .code-fence:hover .code-fence-highlighter-copy-button:hover .code-fence-highlighter-copy-button-icon { /*noinspection CssUnknownTarget*/ content: url("copy-button-copy-icon-hovered.png"); cursor: pointer; } </style>
+  <style>/* Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file. */ .run-icon &gt; img { max-width: 1em; vertical-align: text-top; margin-right: 0.3em; } .code-block { position: absolute; left: 1em; } .hidden { display: none; }</style>
+ </head> 
+ <body>
+  <div md-src-pos="0..2816">
+   <h3 md-src-pos="0..28">Arborescence du projet :</h3>
+   <ul md-src-pos="29..356">
+    <li md-src-pos="29..72"><code md-src-pos="31..37">src/</code>: les fichiers en-têtes et sources,</li>
+    <li md-src-pos="73..146"><code md-src-pos="75..87">resources/</code>: les fichiers représentant des automates finis prédéfinis,</li>
+    <li md-src-pos="147..263"><code md-src-pos="149..155">out/</code>: les fichiers sources compilés,
+     <ul md-src-pos="190..263">
+      <li md-src-pos="190..263"><code md-src-pos="192..202">out/png/</code>: les AFN générés par le programme et dessinés avec Graphviz.</li>
+     </ul></li>
+    <li md-src-pos="264..356"><code md-src-pos="266..281">grammaire.txt</code>: la grammaire formelle des expressions régulières acceptées par ce projet.</li>
+   </ul>
+   <h3 md-src-pos="358..383">Exécutables générés :</h3>
+   <ul md-src-pos="384..967">
+    <li md-src-pos="384..639"><code md-src-pos="386..394">./test</code>: tests unitaires sur deux AFD et de deux AFN définis dans <code md-src-pos="453..465">resources/</code> vérfiants que certains mots sont acceptés ou refusés par ces AF. Dessine aussi les deux AFN, leur union, leur concaténation et l'étoile de Klenne du premier dans <code md-src-pos="628..638">out/png/</code>.</li>
+    <li md-src-pos="640..799"><code md-src-pos="642..677">./mydot &lt;expression régulière...&gt;</code> : dessine les automates associés à une ou plusieurs expressions régulières dans <code md-src-pos="758..768">out/png/</code> ; exemple : <code md-src-pos="781..798">./mydot a b a+b</code>.</li>
+    <li md-src-pos="800..967"><code md-src-pos="802..853">./mygrep &lt;expression régulière&gt; &lt;chaîne à tester&gt;</code> : détermine si une chaîne est acceptée par une expression régulière. Dessine l'AFN final dans <code md-src-pos="948..966">out/png/grep.png</code>.</li>
+   </ul>
+   <p md-src-pos="969..1064"><span md-src-pos="969..977">Remarque</span> : <span md-src-pos="980..991">la commande</span> <code md-src-pos="992..997">dot</code> <span md-src-pos="998..1056">de Graphviz doit être installée pour que les images soient</span> <span md-src-pos="1057..1064">créées.</span></p>
+   <h3 md-src-pos="1066..1080">GNU Make :</h3>
+   <ul md-src-pos="1081..1200">
+    <li md-src-pos="1081..1124"><code md-src-pos="1083..1089">make</code> pour générer tous les programmes ;</li>
+    <li md-src-pos="1125..1200"><code md-src-pos="1127..1139">make clean</code> pour supprimer le dossier <code md-src-pos="1166..1172">out/</code> et les exécutables générés.</li>
+   </ul>
+   <h3 md-src-pos="1202..1224">Fichiers sources :</h3>
+   <ul md-src-pos="1225..1984">
+    <li md-src-pos="1225..1337"><code md-src-pos="1227..1240">src/af.[hc]</code>: constantes partagées par tous les AF, ainsi qu'une fonction pour initialiser le <code md-src-pos="1322..1328">dico</code> d'un AF.</li>
+    <li md-src-pos="1338..1394"><code md-src-pos="1340..1354">src/afd.[hc]</code>: fonctions pour intéragir avec des AFD.</li>
+    <li md-src-pos="1395..1451"><code md-src-pos="1397..1411">src/afn.[hc]</code>: fonctions pour intéragir avec des AFN.</li>
+    <li md-src-pos="1452..1536"><code md-src-pos="1454..1474">src/compregex.[hc]</code>: fonctions pour convertir une expression régulière en un AFN.</li>
+    <li md-src-pos="1537..1618"><code md-src-pos="1539..1559">src/util/misc.[hc]</code>: fonctions communes d'assertion et de lecture de fichiers.</li>
+    <li md-src-pos="1619..1705"><code md-src-pos="1621..1642">src/util/stack.[hc]</code>: fonctions pour représenter une pile d'états (ici, des <code md-src-pos="1698..1703">int</code>).</li>
+    <li md-src-pos="1706..1810"><code md-src-pos="1708..1730">src/util/vstack.[hc]</code>: fonctions pour représenter une pile d'AFN (utilisé dans l'analyse syntaxique).</li>
+    <li md-src-pos="1811..1886"><code md-src-pos="1813..1832">src/util/set.[hc]</code>: fonctions pour représenter un ensemble trié d'états.</li>
+    <li md-src-pos="1887..1984"><code md-src-pos="1889..1901">src/test.c</code>, <code md-src-pos="1903..1916">src/mydot.c</code>, <code md-src-pos="1918..1932">src/mygrep.c</code>: fonctions principales des exécutables du même nom.</li>
+   </ul>
+   <p md-src-pos="1986..2028"><span md-src-pos="1986..2028">Le code source est intégralement commenté.</span></p>
+   <h3 md-src-pos="2030..2056">Exemples d'utilisation</h3>
+   <pre class="code-fence" md-src-pos="2057..2196"><div class="code-fence-highlighter-copy-button" data-fence-content="JCAuL215Z3JlcCAiKDArMSkqMCIgIjAxMTAxMDEwIgoiMDExMDEwMTAiIGVzdCBhY2NlcHTDqWUKCiQgLi9teWdyZXAgIigwKzEpKjAiICIxIgoiMSIgZXN0IHJlamV0w6llCgokIC4vbXlncmVwIGEqICIiCiIiIGVzdCBhY2NlcHTDqWU=">
+  
+     <img class="code-fence-highlighter-copy-button-icon">
+
+    </div><code md-src-pos="2057..2196"><span md-src-pos="2057..2061"></span><span md-src-pos="2061..2112">$ ./mygrep "(0+1)*0" "01101010"</span>
+<span md-src-pos="2113..2146">"01101010" est acceptée</span>
+<span md-src-pos="2147..2147"></span>
+<span md-src-pos="2148..2192">$ ./mygrep "(0+1)*0" "1"</span>
+<span md-src-pos="2193..2218">"1" est rejetée</span>
+<span md-src-pos="2219..2219"></span>
+<span md-src-pos="2220..2246">$ ./mygrep a* ""</span>
+<span md-src-pos="2247..2272">"" est acceptée</span>
+<span md-src-pos="2273..2273"></span><span md-src-pos="2193..2196"></span></code></pre>
+   <pre class="code-fence" md-src-pos="2197..2282"><div class="code-fence-highlighter-copy-button" data-fence-content="JCAuL215ZG90IGEgYiBhK2IgYS5iIGEqClRvdXRlcyBsZXMgZXhwcmVzc2lvbnMgcsOpZ3VsacOocmVzIG9udCDDqXTDqSBkZXNzaW7DqWVzLg==">
+  
+     <img class="code-fence-highlighter-copy-button-icon">
+
+    </div><code md-src-pos="2197..2282"><span md-src-pos="2197..2201"></span><span md-src-pos="2201..2225">$ ./mydot a b a+b a.b a*</span>
+<span md-src-pos="2226..2278">Toutes les expressions régulières ont été dessinées.</span>
+<span md-src-pos="2279..2279"></span><span md-src-pos="2279..2282"></span></code></pre>
+   <h3 md-src-pos="2284..2312">Remarque sur les erreurs</h3>
+   <p md-src-pos="2313..2363"><span md-src-pos="2313..2361">La majorité des erreurs devraient être détectées</span> <span md-src-pos="2362..2363">;</span></p>
+   <pre class="code-fence" md-src-pos="2364..2442"><div class="code-fence-highlighter-copy-button" data-fence-content="JCAuL215ZG90ICIoYSIKKGEKICBeCgplcnJldXIgc3ludGF4aXF1ZTogcGFyZW50aMOoc2UgZmVybWFudGUgYXR0ZW5kdWU=">
+  
+     <img class="code-fence-highlighter-copy-button-icon">
+
+    </div><code md-src-pos="2364..2442"><span md-src-pos="2364..2368"></span><span md-src-pos="2368..2392">$ ./mydot "(a"</span>
+<span md-src-pos="2393..2395">(a</span>
+<span md-src-pos="2396..2399">  ^</span>
+<span md-src-pos="2400..2400"></span>
+<span md-src-pos="2401..2448">erreur syntaxique: parenthèse fermante attendue</span>
+<span md-src-pos="2449..2449"></span><span md-src-pos="2439..2442"></span></code></pre>
+   <pre class="code-fence" md-src-pos="2443..2519"><div class="code-fence-highlighter-copy-button" data-fence-content="JCAuL215ZG90ICJhKWJjIgphKWJjCiBeXl4KCmVycmV1ciBzeW50YXhpcXVlOiBjYXJhY3TDqHJlcyBlbiBzdXJwbHVz">
+  
+     <img class="code-fence-highlighter-copy-button-icon">
+
+    </div><code md-src-pos="2443..2519"><span md-src-pos="2443..2447"></span><span md-src-pos="2447..2473">$ ./mydot "a)bc"</span>
+<span md-src-pos="2474..2478">a)bc</span>
+<span md-src-pos="2479..2483"> ^^^</span>
+<span md-src-pos="2484..2484"></span>
+<span md-src-pos="2485..2525">erreur syntaxique: caractères en surplus</span>
+<span md-src-pos="2526..2526"></span><span md-src-pos="2516..2519"></span></code></pre>
+   <pre class="code-fence" md-src-pos="2520..2583"><div class="code-fence-highlighter-copy-button" data-fence-content="JCAuL215ZG90IGErCmErCiAgXgoKZXJyZXVyIHN5bnRheGlxdWU6IHN5bWJvbGUgYXR0ZW5kdQ==">
+  
+     <img class="code-fence-highlighter-copy-button-icon">
+
+    </div><code md-src-pos="2520..2583"><span md-src-pos="2520..2524"></span><span md-src-pos="2524..2536">$ ./mydot a+</span>
+<span md-src-pos="2537..2539">a+</span>
+<span md-src-pos="2540..2543">  ^</span>
+<span md-src-pos="2544..2544"></span>
+<span md-src-pos="2545..2579">erreur syntaxique: symbole attendu</span>
+<span md-src-pos="2580..2580"></span><span md-src-pos="2580..2583"></span></code></pre>
+   <p md-src-pos="2585..2815"><span md-src-pos="2585..2661">Le programme se terminera immédiatement sur une erreur et ne libèrera pas la</span> <span md-src-pos="2662..2672">mémoire qu</span>'<span md-src-pos="2673..2714">il aura alloué afin de simplifier le code</span> <span md-src-pos="2715..2716">;</span> <span md-src-pos="2717..2734">dans ce contexte,</span> <span md-src-pos="2735..2745">le système</span> <span md-src-pos="2746..2747">d</span>'<span md-src-pos="2748..2815">exploitation prendra le relai et les fuites sont donc négligeables.</span></p>
+  </div>
+ </body>
+</html>
