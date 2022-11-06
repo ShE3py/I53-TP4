@@ -10,9 +10,6 @@
 
 /**
  * Initialise et renvoie un nouvel AFN à partir de sa définition sans effectuer de copie.
- */
-/**
- * Initialise et renvoie un nouvel AFN à partir de sa définition sans effectuer de copie.
  *
  * Paramètres:
  * - Q     : le plus grand état
@@ -321,7 +318,7 @@ int afn_simuler(AFN A, const char *s) {
 		set R_next = set_new_empty();
 		
 		for(size_t j = 0; j < R.len; ++j) {
-			// pour toutes les transitions possibles en lisant `c` dans un état particulier de `R`,
+			// pour toutes les transitions possibles en lisant `c` (d'indice `s` dans `Sigma`) dans un état particulier de `R`,
 			int *q2 = A->delta[R.buf[j]][s];
 			
 			if(q2 != NULL) {
@@ -496,8 +493,8 @@ AFN afn_concat(AFN A, AFN B) {
 	// Décalage des nouveaux états finaux
 	int *F = rshift_all_sized(B->F, B->lenF, qB_offset);
 	
-	AFN C = afn_init(Q, A->lenI, A->I, B->lenF, F, Sigma);
-	free(F);
+	AFN C = afn_init(Q, A->lenI, A->I, B->lenF, F, Sigma);  // `rshift_all_sized()` rajoute un élément `INVALID_STATE` à la fin,
+	free(F);                                                // mais `afn_init` ne copiera que `lenF` éléments, donc aucun soucis d'accumulation
 	
 	// Copie des transitions présentes dans `A` et `B`
 	afn_delta_copy_assign(C->delta, A, qA_offset);

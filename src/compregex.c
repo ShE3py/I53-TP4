@@ -164,6 +164,14 @@ Lexeme* analyse_lexicale(const char *s, size_t *outLen) {
  * Déclarations des primitives
  */
 
+/**
+ * Paramètres d'une primitive:
+ * - lexemes: un tableau de lexèmes
+ * - n      : la taille de ce tableau
+ * - i      : un pointeur vers l'indice du lexème courant (c.-à-d. celui en train d'être analysé syntaxiquement)
+ * - stack  : un pointeur vers une pile d'AFN
+ * - s      : la chaîne de caractères dont `lexemes` a été produit (utilisée pour les messages d'erreur)
+ */
 #define PRIMITIVE(p) void p (Lexeme *lexemes, size_t n, size_t *i, vstack *stack, const char *s)
 
 PRIMITIVE(Expr);
