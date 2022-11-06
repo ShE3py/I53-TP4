@@ -2,36 +2,39 @@ SHELL = /bin/bash
 CC = gcc
 
 SRC = src
-OBJS = af.o afd.o afn.o compregex.o util/misc.o util/stack.o util/set.o util/vstack.o
+OBJS = af.o afd.o afn.o compregex.o misc.o stack.o set.o vstack.o
 OUT = out
 
 CFLAGS = -Wall -g -I$(SRC)
-LFLAGS = -lm
+LFLAGS = -L$(OUT) -laf -lm
 
 mkdirs = $(OUT)/grass
 
-all: $(mkdirs) test.exe mydot mygrep
+all: $(mkdirs) test mydot mygrep
 
 $(mkdirs):
-	mkdir -p $(OUT)/util/
+	mkdir -p $(OUT)/gv/
 	mkdir -p $(OUT)/png/
 	touch $@
 
-test.exe: $(addprefix $(OUT)/,$(OBJS) test.o)
-	$(CC) $^ $(CFLAGS) -o $@ $(LFLAGS)
+test: $(SRC)/test.c $(OUT)/libaf.a
+	$(CC) $< $(CFLAGS) -o $@ $(LFLAGS)
 
-mydot: $(addprefix $(OUT)/,$(OBJS) mydot.o)
-	$(CC) $^ $(CFLAGS) -o $@ $(LFLAGS)
+mydot: $(SRC)/mydot.c $(OUT)/libaf.a
+	$(CC) $< $(CFLAGS) -o $@ $(LFLAGS)
 
-mygrep: $(addprefix $(OUT)/,$(OBJS) mygrep.o)
-	$(CC) $^ $(CFLAGS) -o $@ $(LFLAGS)
+mygrep: $(SRC)/mygrep.c $(OUT)/libaf.a
+	$(CC) $< $(CFLAGS) -o $@ $(LFLAGS)
+
+$(OUT)/libaf.a: $(addprefix $(OUT)/,$(OBJS))
+	ar rcs $@ $^
 
 $(OUT)/%.o: $(SRC)/%.c $(SRC)/%.h
 	$(CC) -c $< $(CFLAGS) -o $@
 
-$(OUT)/%.o: $(SRC)/%.c
+$(OUT)/%.o: $(SRC)/util/%.c $(SRC)/util/%.h
 	$(CC) -c $< $(CFLAGS) -o $@
 
 clean:
 	rm -rf $(OUT)
-	rm -f *.exe mydot mygrep
+	rm -f test mydot mygrep

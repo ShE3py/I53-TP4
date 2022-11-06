@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[]) {
 	if(argc != 3) {
-		fprintf(stderr, "%s <expression régulière> <chaîne>\n", argv[0]);
+		fprintf(stderr, "%s <expression régulière> <chaîne à tester>\n", argv[0]);
 		exit(1);
 	}
 	

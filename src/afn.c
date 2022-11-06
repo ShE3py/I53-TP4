@@ -624,7 +624,7 @@ void afn_print(AFN A) {
  * Dessine un AFN dans un fichier `filename.png`.
  */
 void afn_dot(AFN A, const char *path) {
-	char *dir = concat("out/", path);
+	char *dir = concat("out/gv/", path);
 	char *out = concat(dir, ".gv");
 	
 	free(dir);
