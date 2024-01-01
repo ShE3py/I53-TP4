@@ -1,7 +1,7 @@
 #ifndef COMPREGEX_H
 #define COMPREGEX_H
 
-#include "AFN.h"
+#include "afn.h"
 
 /**
  * Transforme la chaîne de caractères spécifiée en un AFN.

@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-#include "AFN.h"
+#include "afn.h"
 
 /*
  * Copié-collé de stack.h, suppression de certaines fonctions
